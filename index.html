@@ -1,0 +1,1794 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculus Rules: differentiate and integrate</title>
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)'],['$','$']],displayMath:[['\\[','\\]'],['$$','$$']]},svg:{fontCache:'global'},startup:{typeset:true}};</script><script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+<style>
+:root{
+  --ink:#10324A; --paper:#EEF3F4; --chart:#F7FAFB; --sea:#1C6E7D; --sea-d:#14525D; --shoal:#C5DDE1; --grid:#DCE7EA;
+  --buoy:#E9A614; --buoy-t:#FBF0D2; --flare:#C23B51; --flare-t:#FBE9EC; --good:#1F7654; --good-t:#E2F1EA;
+  --line:#C9D9DD; --muted:#52707E;
+  --serif: KaTeX_Main, "Latin Modern Roman", "CMU Serif", Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--paper);color:var(--ink);font:16px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+button:disabled{cursor:default}
+:focus-visible{outline:3px solid var(--buoy);outline-offset:2px}
+#app{max-width:1060px;margin:0 auto;padding:36px 22px 64px}
+
+/* Header: the title is set like a limit operator, with its subscript beneath */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:18px 40px;margin-bottom:30px}
+.title{margin:0;font-family:var(--serif);font-weight:400;display:inline-flex;flex-direction:column;align-items:center;line-height:.9}
+.t-main{font-size:clamp(56px,9vw,96px);letter-spacing:-.005em}
+.t-sub{font-size:clamp(18px,2.5vw,26px);font-style:italic;color:var(--sea);margin-top:.3em}
+.intro{max-width:44ch;text-align:right}
+.lede{margin:0 0 6px;color:var(--muted)}
+.tally{margin:0;font-family:var(--serif);font-size:19px}
+.tally strong{font-weight:400;font-size:26px;color:var(--sea)}
+.journey{margin:12px 0 0;height:9px;border-radius:999px;background:var(--grid);border:1px solid var(--line);overflow:hidden}
+.jbar{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--sea),var(--buoy));border-radius:999px;transition:width .6s ease}
+@media (max-width:720px){.intro{text-align:left}}
+
+/* World switch */
+.worlds{display:flex;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.world{display:grid;grid-template-columns:auto auto;column-gap:12px;align-items:center;text-align:left;background:none;border:0;border-bottom:3px solid transparent;padding:10px 26px 12px 2px;margin-bottom:-1px}
+.wglyph{grid-row:span 2;font-size:21px;color:var(--sea);min-width:34px;text-align:center}
+.wname{font-family:var(--serif);font-size:23px;line-height:1.2}
+.wcount{font-size:13px;color:var(--muted)}
+.world.on{border-bottom-color:var(--sea)}
+.world:not(.on) .wname{color:var(--muted)}
+.world:not(.on):hover .wname{color:var(--ink)}
+
+/* Map */
+.mapwrap{margin-top:20px;background:var(--chart);border:1px solid var(--line);border-radius:14px;overflow-x:auto}
+.map{display:block;width:100%;min-width:760px;height:auto}
+.map .grid{stroke:var(--grid);stroke-width:1}
+.map .axis{stroke:#9DB5BD;stroke-width:1.5}
+.map .curve{fill:none;stroke:var(--sea);stroke-width:3;stroke-linecap:round}
+.map.complete .curve{stroke:var(--buoy);stroke-width:4}
+.map .tan{stroke:var(--buoy);stroke-width:2;stroke-linecap:round}
+.map .rect{fill:var(--shoal);stroke:#8DB9C1;stroke-width:1}
+.map .area{fill:rgba(28,110,125,.16)}
+.node .dot{stroke-width:2.5}
+.node.open .dot{fill:#fff;stroke:var(--sea)}
+.node.done .dot{fill:var(--buoy);stroke:var(--ink)}
+.node.locked .dot{fill:var(--paper);stroke:#A8BDC4;stroke-dasharray:3 3}
+.node text{font-family:var(--serif);font-size:15px;text-anchor:middle;fill:var(--ink);pointer-events:none}
+.node.locked text{fill:#86A0AA}
+.node.open,.node.done{cursor:pointer}
+.node .halo{fill:none;stroke:var(--sea);stroke-width:1.5;opacity:.5}
+.node:focus{outline:none}
+.node:focus-visible .dot{stroke:var(--flare);stroke-width:4}
+.node.open:hover .dot{fill:var(--shoal)}
+.mapnote{color:var(--muted);font-size:14px;margin:10px 4px 26px}
+.swipe{display:none;color:var(--muted);font-size:13px;margin:-16px 4px 14px}
+
+/* Level list: a true sequence, so it is numbered and flows down each column */
+.levels{list-style:none;margin:0;padding:0;columns:2 400px;column-gap:44px}
+.levels li{break-inside:avoid}
+.lvrow{display:grid;grid-template-columns:38px 1fr auto;gap:14px;align-items:center;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:12px 4px}
+.lvn{font-family:var(--serif);font-size:21px;color:var(--sea);text-align:center;width:34px;height:34px;line-height:34px;border-radius:50%}
+.lvrow.done .lvn{background:var(--buoy);color:var(--ink);font-size:17px}
+.lvt strong{display:block;font-weight:600;font-size:15.5px}
+.lvd{display:block;font-size:13.5px;color:var(--muted)}
+.lvs{font-size:13px;color:var(--muted);white-space:nowrap}
+.lvrow.done .lvs{color:var(--good);font-weight:600}
+.lvrow.locked{opacity:.5}
+.lvrow:not(:disabled):hover strong{color:var(--sea)}
+
+.foot{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:center;justify-content:space-between;margin-top:40px;padding-top:18px;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}
+.teach{display:flex;gap:8px;align-items:center;cursor:pointer}
+.teach input{width:17px;height:17px;accent-color:var(--sea)}
+.quiet{background:none;border:0;padding:6px 0;color:var(--sea);text-decoration:underline;text-underline-offset:3px}
+
+/* Level screen */
+.back{margin-bottom:14px}
+.crumb{margin:0;color:var(--muted);font-size:14px}
+.lvhead h2{margin:4px 0 14px;font-family:var(--serif);font-weight:400;font-size:clamp(32px,4.6vw,46px);line-height:1.08}
+.lvhead h2:focus{outline:none}
+.meter{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin-bottom:22px}
+.pips{display:flex;gap:6px;flex-wrap:wrap}
+.pip{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--line);background:#fff}
+.pip.hit{background:var(--sea);border-color:var(--sea)}
+.pip.half{background:linear-gradient(90deg,var(--sea) 50%,#fff 50%);border-color:var(--sea)}
+.pip.miss{background:var(--flare-t);border-color:var(--flare)}
+.mnote{margin:0;font-size:14px;color:var(--muted)}
+.streak{color:var(--sea);font-weight:600}
+.tabs{display:inline-flex;border:1px solid var(--line);border-radius:10px;padding:3px;background:#fff;margin-bottom:14px}
+.tabs button{border:0;background:none;padding:7px 20px;border-radius:7px;font-size:15px}
+.tabs button[aria-selected="true"]{background:var(--ink);color:#fff}
+.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:32px 36px}
+.learn{font-family:var(--serif);font-size:18.5px;line-height:1.62;max-width:68ch;margin-bottom:12px}
+.learn p{margin:0 0 .9em}
+/* Lesson videos */
+.vids{margin-top:24px;padding-top:18px;border-top:1px solid var(--line)}
+.vhead{font-family:var(--sans);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:0 0 12px}
+.vidgrid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.vid{margin:0}
+.frame{position:relative;width:100%;padding-top:56.25%;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#000}
+.frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vcap{margin:8px 0 0;font-size:13.5px;color:var(--muted);line-height:1.45}
+.vcap b{color:var(--ink);font-weight:600}
+.vcap a{color:var(--sea)}
+.qtext{font-family:var(--serif);font-size:20px;line-height:1.55;max-width:70ch}
+.from{font-family:var(--sans);font-size:13px;color:var(--muted);margin:0 0 6px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}
+.choice{position:relative;min-height:70px;padding:14px 18px 14px 42px;border:1.5px solid var(--line);background:var(--chart);border-radius:10px;text-align:left;font-size:18px;overflow-x:auto}
+.ck{position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted)}
+.choice:not(:disabled):hover{border-color:var(--sea);background:#fff}
+.choice.right{border-color:var(--good);background:var(--good-t)}
+.choice.wrong{border-color:var(--flare);background:var(--flare-t)}
+.choice:disabled:not(.right):not(.wrong){opacity:.55}
+.numrow{margin-top:20px}
+.numrow label{display:block;font-size:14px;color:var(--muted);margin-bottom:6px}
+.numbox{display:flex;gap:10px;flex-wrap:wrap}
+.numbox input{font-family:var(--serif);font-size:22px;padding:8px 12px;width:220px;border:1.5px solid var(--line);border-radius:8px;color:var(--ink);background:var(--chart)}
+.numbox input:focus{border-color:var(--sea);outline:none;box-shadow:0 0 0 3px rgba(28,110,125,.22)}
+.fmt{font-size:13px;color:var(--muted);margin:6px 0 0}
+.err{color:var(--flare);font-size:14px;margin:4px 0 0;min-height:1.2em}
+.primary{background:var(--sea);color:#fff;border:0;border-radius:8px;padding:10px 20px;font-weight:600}
+.primary:hover:not(:disabled){background:var(--sea-d)}
+.primary:disabled{opacity:.45}
+.secondary{background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:8px 16px}
+.secondary:hover{border-color:var(--sea)}
+.tools{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.hintnote{font-size:13px;color:var(--muted)}
+.hint{padding:12px 16px;background:var(--buoy-t);border-radius:8px;font-family:var(--serif);font-size:17px;width:100%}
+.hint strong{font-family:var(--sans);font-size:14px}
+.fb{margin-top:24px;padding:16px 20px;border-left:4px solid;border-radius:0 10px 10px 0}
+.fb:focus{outline:none}
+.fb.ok{border-color:var(--good);background:var(--good-t)}
+.fb.no{border-color:var(--flare);background:var(--flare-t)}
+.verdict{margin:0 0 6px;font-weight:600}
+.sol{font-family:var(--serif);font-size:17.5px;line-height:1.6;overflow-x:auto}
+.sol h3{font-family:var(--sans);font-size:13px;color:var(--muted);font-weight:600;margin:10px 0 4px}
+.after{margin-top:18px}
+.banner{display:flex;flex-direction:column;gap:10px;margin-bottom:24px;padding:16px 20px;background:var(--buoy-t);border:1.5px solid var(--buoy);border-radius:12px;animation:rise .45s ease-out}
+.banner p{margin:0}
+.banner .cheer{color:var(--ink);opacity:.82}
+.bactions{display:flex;flex-wrap:wrap;gap:10px;margin-top:2px}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.banner{animation:none}}
+@media (max-width:640px){.panel{padding:20px 16px}.choices{grid-template-columns:1fr}.qtext{font-size:18px}.learn{font-size:17px}}
+
+/* The one orchestrated moment: a newly mastered level appears on the map */
+.tan.reveal{stroke-dasharray:215;stroke-dashoffset:215;animation:draw .9s ease-out .35s forwards}
+.rect.reveal{transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(0);animation:grow .8s ease-out .35s forwards}
+.area.reveal-fade{opacity:0;animation:fade 1.2s ease-out .35s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes grow{to{transform:scaleY(1)}}
+@keyframes fade{to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.tan.reveal,.rect.reveal,.area.reveal-fade{animation:none;stroke-dashoffset:0;transform:none;opacity:1}}
+
+.katex{font-size:1.07em}
+.katex-display{margin:.7em 0;overflow-x:auto;overflow-y:hidden;padding:2px 0}
+@media (max-width:520px){.worlds{flex-wrap:nowrap}.world{min-width:0}.world{padding:8px 14px 10px 0;column-gap:8px}.wname{font-size:19px}.wglyph{min-width:26px;font-size:18px}}
+/* Phone layout */
+@media (max-width:600px){
+  #app{padding:22px 14px 48px}
+  .top{gap:14px;margin-bottom:22px}
+  .title{align-items:flex-start}
+  .t-main{font-size:clamp(40px,14vw,96px)}
+  .t-sub{font-size:clamp(16px,5.2vw,26px)}
+  .intro{max-width:none;text-align:left}
+  .worlds{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .world{flex:0 0 auto}
+  .panel{padding:18px 14px;border-radius:12px}
+  .choices{grid-template-columns:1fr}
+  .numbox{flex-direction:column;align-items:stretch}
+  .numbox input{width:100%}
+  .numbox .primary{width:100%}
+  .primary,.secondary{min-height:44px}
+  .vidgrid{grid-template-columns:1fr}
+  .swipe{display:block}
+  .lvrow{grid-template-columns:30px 1fr;row-gap:4px}
+  .lvs{grid-column:2}
+  .banner{padding:14px 16px}
+}
+
+.confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:9999}
+.lvbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}
+.lvbar .back{margin:0}
+.aibox{margin-top:12px}
+.ai{background:var(--good-t);border:1px solid var(--good);border-radius:10px;padding:12px 14px;font-size:14px;line-height:1.55;color:var(--ink)}
+.ai.bad{background:var(--flare-t);border-color:var(--flare)}
+</style></head><body><main id="app"></main><script>
+/* ===== Limits to Infinity: shared helpers ===== */
+const T = String.raw;
+
+// Mastery settings. A level is mastered when the learner scores THRESH out of the last WIN attempts.
+// A correct answer scores 1, a correct answer after a hint scores 0.5, a wrong answer scores 0.
+const WIN = 10, THRESH = 8, BOSS_WIN = 15, BOSS_THRESH = 12;
+
+const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+const rnz = (a, b) => { let v; do { v = ri(a, b); } while (v === 0); return v; };
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) [a, b] = [b, a % b]; return a || 1; }
+
+// Exact fractions, so answers like 7/12 are stored and displayed exactly.
+class Fr {
+  constructor(n, d = 1) {
+    if (d === 0) throw new Error('zero denominator');
+    if (d < 0) { n = -n; d = -d; }
+    const g = gcd(n, d); this.n = n / g; this.d = d / g;
+    if (this.n === 0) this.n = 0; // normalise -0
+  }
+  static of(x) { return x instanceof Fr ? x : new Fr(x, 1); }
+  add(o) { o = Fr.of(o); return new Fr(this.n * o.d + o.n * this.d, this.d * o.d); }
+  sub(o) { o = Fr.of(o); return new Fr(this.n * o.d - o.n * this.d, this.d * o.d); }
+  mul(o) { o = Fr.of(o); return new Fr(this.n * o.n, this.d * o.d); }
+  div(o) { o = Fr.of(o); return new Fr(this.n * o.d, this.d * o.n); }
+  neg() { return new Fr(-this.n, this.d); }
+  val() { return this.n / this.d; }
+  tex() { return this.d === 1 ? String(this.n) : (this.n < 0 ? '-' : '') + '\\frac{' + Math.abs(this.n) + '}{' + this.d + '}'; }
+}
+const fr = (n, d = 1) => new Fr(n, d);
+
+// terms: [[coef, power], ...] -> TeX, with tidy signs and unit coefficients.
+function polyT(terms, v = 'x') {
+  let s = '';
+  for (const [c0, p] of terms) {
+    const c = Fr.of(c0); if (c.n === 0) continue;
+    const neg = c.n < 0, a = neg ? c.neg() : c;
+    const coef = p === 0 ? a.tex() : (a.n === 1 && a.d === 1 ? '' : a.tex());
+    const body = coef + (p === 0 ? '' : p === 1 ? v : `${v}^{${p}}`);
+    s += s === '' ? (neg ? '-' : '') + body : (neg ? ' - ' : ' + ') + body;
+  }
+  return s === '' ? '0' : s;
+}
+// Polynomials as coefficient arrays, highest power first.
+const P = (cs, v = 'x') => polyT(cs.map((c, i) => [c, cs.length - 1 - i]), v);
+const pEval = (cs, x) => cs.reduce((acc, c) => acc.mul(x).add(c), fr(0));
+const pDer = cs => cs.slice(0, -1).map((c, i) => Fr.of(c).mul(cs.length - 1 - i));
+const pAnti = cs => [...cs.map((c, i) => Fr.of(c).div(cs.length - i)), fr(0)];
+
+const xm = a => a === 0 ? 'x' : a > 0 ? `x - ${a}` : `x + ${-a}`;   // x - a
+const xp = a => xm(-a);                                              // x + a
+const sg = b => b === 0 ? '' : b > 0 ? ` + ${b}` : ` - ${-b}`;       // " + b"
+const st = (c, body) => c === 0 ? '' : (c > 0 ? ' + ' : ' - ') + (Math.abs(c) === 1 ? '' : Math.abs(c)) + body;
+const co = (k, body) => k === 1 ? body : k === -1 ? '-' + body : k + body;
+const kOverM = (k, m) => m === 1 ? String(k) : T`\frac{${k}}{${m}}`;
+
+function piTex(f) {
+  if (f.n === 0) return '0';
+  const s = f.n < 0 ? '-' : '', a = Math.abs(f.n);
+  if (f.d === 1) return s + (a === 1 ? '' : a) + '\\pi';
+  return s + '\\frac{' + (a === 1 ? '' : a) + '\\pi}{' + f.d + '}';
+}
+const PI_NOTE = T` Give your answer as a multiple of $\pi$.`;
+
+// Question builders. Text fields may contain $inline$ and $$display$$ TeX.
+function NUM(q, ans, hint, sol, pi = false) {
+  ans = Fr.of(ans);
+  return { type: 'num', q, ans: ans.val(), ansTex: pi ? piTex(ans) : ans.tex(), hint, sol, pi };
+}
+function MC(q, correct, wrong, hint, sol) {
+  const ds = [];
+  for (const w of wrong) if (w !== correct && !ds.includes(w)) ds.push(w);
+  const all = shuffle([correct, ...ds.slice(0, 3)]);
+  return { type: 'mc', q, choices: all, ans: all.indexOf(correct), ansTex: correct, hint, sol };
+}
+function lnT(c, arg, first) {
+  if (c.n === 0) return '';
+  const neg = c.n < 0, a = neg ? c.neg() : c;
+  const body = (a.n === 1 && a.d === 1 ? '' : a.tex()) + T`\ln\left|${arg}\right|`;
+  return first ? (neg ? '-' : '') + body : (neg ? ' - ' : ' + ') + body;
+}
+
+const LEVELS = [];
+const WORLDS = [
+  { id: 'f', title: 'Function families', glyph: T`\mathcal{F}` },
+  { id: 'd', title: 'Differentiation', glyph: T`\tfrac{d}{dx}` },
+  { id: 'i', title: 'Integration', glyph: T`\textstyle\int` },
+  { id: 'p', title: 'Partial derivatives', glyph: T`\partial` },
+];
+function bossGen(world) {
+  return function (d) {
+    const L = pick(LEVELS.filter(l => l.world === world && !l.boss));
+    const q = L.gen(Math.max(1, d)); q.from = L.title; return q;
+  };
+}
+/* ===== World 1: Differentiation, levels 1-7 ===== */
+
+LEVELS.push({ world: 'd', id: 'd1', title: 'Limits by substitution', short: 'When a function is continuous, plug in.',
+learn: T`<p>We write $\displaystyle\lim_{x\to a} f(x)=L$ when $f(x)$ can be made as close to $L$ as we like by taking $x$ close enough to $a$, but not equal to $a$.</p>
+<p>If $f$ is <em>continuous</em> at $a$, the limit is simply the value of the function there: $$\lim_{x\to a} f(x) = f(a).$$</p>
+<p>Polynomials are continuous everywhere. Rational functions are continuous wherever the denominator is not zero, and $\sqrt{g(x)}$ is continuous wherever $g(x)>0$.</p>
+<p><b>Example.</b> $\displaystyle\lim_{x\to 2}\frac{x^2+1}{x+3} = \frac{4+1}{2+3} = 1.$</p>
+<p>Always check the denominator first. If substitution gives $\tfrac{0}{0}$ the work is not finished; that is the next level.</p>`,
+gen(d) {
+  if (d === 0) {
+    const cs = [rnz(-3, 3), ri(-5, 5), ri(-6, 6)], a = ri(-3, 3), v = pEval(cs, a);
+    return NUM(T`Evaluate $$\lim_{x\to ${a}}\left(${P(cs)}\right)$$`, v,
+      'Polynomials are continuous everywhere, so substitute directly.',
+      T`Polynomials are continuous, so the limit is the value at $x=${a}$: $$\lim_{x\to ${a}}\left(${P(cs)}\right) = ${v.tex()}.$$`);
+  }
+  if (d === 1) {
+    const p = rnz(-4, 4), q = ri(-6, 6), r = ri(-5, 5); let a; do { a = ri(-3, 3); } while (a + r === 0);
+    const v = fr(p * a + q, a + r);
+    return NUM(T`Evaluate $$\lim_{x\to ${a}}\frac{${P([p, q])}}{${xp(r)}}$$`, v,
+      'Check the denominator at this point first. If it is not zero, the function is continuous there.',
+      T`At $x=${a}$ the denominator is $${a + r}\neq 0$, so substitute: $$\frac{${p * a + q}}{${a + r}} = ${v.tex()}.$$`);
+  }
+  const a = ri(1, 4) * pick([1, -1]), s = Math.abs(a) + ri(1, 3), k = s * s - a * a;
+  return NUM(T`Evaluate $$\lim_{x\to ${a}}\sqrt{x^2 + ${k}}$$`, s,
+    'The expression under the root is positive at this point.',
+    T`$x^2+${k}$ is positive at $x=${a}$, so substitute: $\sqrt{${a * a}+${k}}=\sqrt{${s * s}}=${s}$.`);
+}});
+
+LEVELS.push({ world: 'd', id: 'd2', title: 'Factor and cancel', short: T`Resolving $\tfrac{0}{0}$ with algebra.`,
+learn: T`<p>If substituting gives $\tfrac{0}{0}$, the limit is <em>indeterminate</em>: more work is needed. The limit depends only on values <em>near</em> $a$, never at $a$, so we may simplify first.</p>
+<p><b>Factor and cancel.</b> $$\lim_{x\to3}\frac{x^2-9}{x-3}=\lim_{x\to3}\frac{(x-3)(x+3)}{x-3}=\lim_{x\to3}(x+3)=6.$$</p>
+<p><b>Multiply by the conjugate</b> when a square root is involved: $$\frac{\sqrt{x+4}-2}{x}\cdot\frac{\sqrt{x+4}+2}{\sqrt{x+4}+2}=\frac{1}{\sqrt{x+4}+2}\to\frac14 \text{ as } x\to 0.$$</p>`,
+gen(d) {
+  if (d < 2) {
+    const r = rnz(-4, 4); let s; do { s = ri(-5, 5); } while (s === r);
+    const num = [1, -(r + s), r * s], fac = T`(${xm(r)})(${xm(s)})`;
+    if (d === 0) return NUM(T`Evaluate $$\lim_{x\to ${r}}\frac{${P(num)}}{${xm(r)}}$$`, r - s,
+      T`Substitution gives $\tfrac{0}{0}$. Factor the numerator: one factor is $(${xm(r)})$.`,
+      T`Substituting gives $\tfrac{0}{0}$, so factor: $${P(num)} = ${fac}$. For $x \neq ${r}$ the common factor cancels: $$\lim_{x\to ${r}}\frac{${fac}}{${xm(r)}} = \lim_{x\to ${r}}(${xm(s)}) = ${r - s}.$$`);
+    let t; do { t = ri(-5, 5); } while (t === r || t === s);
+    const den = [1, -(r + t), r * t], ans = fr(r - s, r - t);
+    return NUM(T`Evaluate $$\lim_{x\to ${r}}\frac{${P(num)}}{${P(den)}}$$`, ans,
+      T`Numerator and denominator both vanish at $x=${r}$, so both contain the factor $(${xm(r)})$.`,
+      T`Factor both: $$\frac{${fac}}{(${xm(r)})(${xm(t)})} = \frac{${xm(s)}}{${xm(t)}}\quad (x\neq ${r}).$$ Now substitute: $\dfrac{${r} - (${s})}{${r} - (${t})} = ${ans.tex()}$.`);
+  }
+  const k = ri(1, 5), m = rnz(-6, 6), ans = fr(m, 2 * k), rad = T`\sqrt{${k * k}${st(m, 'x')}}`;
+  return NUM(T`Evaluate $$\lim_{x\to 0}\frac{${rad}-${k}}{x}$$`, ans,
+    T`Multiply top and bottom by the conjugate $${rad}+${k}$.`,
+    T`Multiply by the conjugate: $$\frac{(${k * k}${st(m, 'x')}) - ${k * k}}{x\left(${rad}+${k}\right)} = \frac{${m}}{${rad}+${k}}.$$ As $x\to0$ this tends to $\dfrac{${m}}{${k}+${k}} = ${ans.tex()}$.`);
+}});
+
+LEVELS.push({ world: 'd', id: 'd3', title: 'One-sided limits', short: 'Left, right, and when a limit does not exist.',
+learn: T`<p>$\displaystyle\lim_{x\to a^-} f(x)$ uses only $x<a$ (approach from the left). $\displaystyle\lim_{x\to a^+} f(x)$ uses only $x>a$.</p>
+<p>The two-sided limit exists exactly when both one-sided limits exist and agree: $$\lim_{x\to a} f(x)=L \iff \lim_{x\to a^-}f(x)=L=\lim_{x\to a^+}f(x).$$</p>
+<p>For a piecewise function, use the rule that applies on each side. The value $f(a)$ itself plays no part in the limit.</p>
+<p><b>Example.</b> A ferry fare that jumps from 400 to 600 Jamaican dollars at the 10 km mark has left limit 400 and right limit 600 there, so the two-sided limit at 10 km does not exist.</p>`,
+gen(d) {
+  const a = ri(-3, 3), m1 = rnz(-3, 3), b1 = ri(-5, 5), L1 = m1 * a + b1, m2 = rnz(-3, 3);
+  const eq = d > 0 && Math.random() < 0.5;
+  const b2 = L1 - m2 * a + (eq ? 0 : rnz(-3, 3)), L2 = m2 * a + b2;
+  const f = T`$$f(x)=\begin{cases} ${P([m1, b1])} & x<${a}\\ ${P([m2, b2])} & x\ge ${a}\end{cases}$$`;
+  const lw = T`$${m1}(${a})${sg(b1)} = ${L1}$`, rw = T`$${m2}(${a})${sg(b2)} = ${L2}$`;
+  const kind = d === 0 ? pick(['left', 'right']) : (Math.random() < 0.8 ? 'two' : pick(['left', 'right']));
+  if (kind === 'left') return NUM(T`Let ${f} Find $\displaystyle\lim_{x\to ${a}^-} f(x)$.`, L1,
+    T`From the left means $x<${a}$. Which rule applies there?`, T`For $x<${a}$ use $${P([m1, b1])}$: ${lw}.`);
+  if (kind === 'right') return NUM(T`Let ${f} Find $\displaystyle\lim_{x\to ${a}^+} f(x)$.`, L2,
+    T`From the right means $x>${a}$. Which rule applies there?`, T`For $x>${a}$ use $${P([m2, b2])}$: ${rw}.`);
+  const dne = T`\text{does not exist}`;
+  const correct = eq ? String(L1) : dne;
+  const wrong = eq ? [dne, String(L1 + 1), String(L1 - 1), String(-L1)] : [String(L1), String(L2), String(L1 + L2), '0', String(L2 - L1), String(L1 + 2)];
+  return MC(T`Let ${f} Evaluate $\displaystyle\lim_{x\to ${a}} f(x)$.`, correct, wrong,
+    'Work out the left and right limits separately, then compare them.',
+    T`Left limit: ${lw}. Right limit: ${rw}. ` + (eq ? T`They agree, so the two-sided limit is $${L1}$.` : 'They differ, so the two-sided limit does not exist.'));
+}});
+
+LEVELS.push({ world: 'd', id: 'd4', title: 'Limits at infinity', short: 'End behaviour of rational functions.',
+learn: T`<p>As $x\to\pm\infty$ a polynomial behaves like its leading term. For a rational function, compare the degree $m$ of the numerator with the degree $n$ of the denominator.</p>
+<p>If $m<n$ the limit is $0$. If $m=n$ it is the ratio of the leading coefficients. If $m>n$ the function grows without bound, towards $\infty$ or $-\infty$ depending on signs.</p>
+$$\lim_{x\to\infty}\frac{6x^2-x+4}{3x^2+5}=\lim_{x\to\infty}\frac{6-\frac1x+\frac4{x^2}}{3+\frac5{x^2}}=2.$$
+<p>The method: divide every term by the highest power of $x$ in the denominator. When $x\to-\infty$, watch odd powers: $x^3\to-\infty$ but $x^2\to\infty$.</p>`,
+gen(d) {
+  const c = d === 0 ? 'eq' : pick(['lt', 'eq', 'gt']), neg = d === 2 && Math.random() < 0.5;
+  let m, n;
+  if (c === 'eq') { m = n = ri(1, 3); } else if (c === 'lt') { n = ri(2, 3); m = ri(1, n - 1); } else { m = ri(2, 3); n = ri(1, m - 1); }
+  const a = rnz(-6, 6), b = rnz(-6, 6);
+  const num = [a, ...Array.from({ length: m }, () => ri(-5, 5))], den = [b, ...Array.from({ length: n }, () => ri(-5, 5))];
+  const dir = neg ? T`-\infty` : T`\infty`;
+  let correct, sol;
+  if (c === 'eq') {
+    correct = fr(a, b).tex();
+    sol = T`Both have degree ${m}. Divide top and bottom by $${n === 1 ? 'x' : `x^{${n}}`}$: every lower-power term tends to $0$, leaving the ratio of leading coefficients, $\dfrac{${a}}{${b}} = ${correct}$.`;
+  } else if (c === 'lt') {
+    correct = '0';
+    sol = T`The denominator has the higher degree (${n} against ${m}). Dividing by $${n === 1 ? 'x' : `x^{${n}}`}$, the numerator tends to $0$ while the denominator tends to $${b}$, so the limit is $0$.`;
+  } else {
+    let s = Math.sign(a * b); if (neg && (m - n) % 2 === 1) s = -s;
+    correct = s > 0 ? T`\infty` : T`-\infty`;
+    const pw = m - n === 1 ? 'x' : `x^{${m - n}}`;
+    sol = T`The numerator has the higher degree (${m} against ${n}), so for large $|x|$ the fraction behaves like $\dfrac{${a}}{${b}}${pw}$, which tends to $${correct}$ as $x\to ${dir}$.`;
+  }
+  const opts = shuffle([fr(a, b).tex(), fr(b, a).tex(), '0', T`\infty`, T`-\infty`].filter(o => o !== correct));
+  return MC(T`Evaluate $$\lim_{x\to ${dir}}\frac{${P(num)}}{${P(den)}}$$`, correct, opts,
+    'Compare the highest powers of x in the numerator and the denominator.', sol);
+}});
+
+LEVELS.push({ world: 'd', id: 'd5', title: 'Trig limits and continuity', short: T`$\tfrac{\sin x}{x}\to 1$, and joining pieces smoothly.`,
+learn: T`<p>The key trigonometric limit, with $x$ in radians, is $$\lim_{x\to0}\frac{\sin x}{x}=1.$$ Rescale to use it: $\dfrac{\sin 5x}{2x}=\dfrac52\cdot\dfrac{\sin5x}{5x}\to\dfrac52$. Since $\tan x=\dfrac{\sin x}{\cos x}$ and $\cos 0=1$, also $\dfrac{\tan x}{x}\to1$.</p>
+<p>A function is <em>continuous</em> at $a$ when $\lim_{x\to a}f(x)=f(a)$. For a piecewise function the pieces must meet at the join: set the two expressions equal at $x=a$ and solve for the unknown constant.</p>`,
+gen(d) {
+  const v = pick(d === 0 ? ['sin', 'cont'] : d === 1 ? ['sin', 'tan', 'cont'] : ['sinsin', 'tan', 'cont']);
+  if (v === 'cont') {
+    const a = rnz(-3, 3), k = rnz(-4, 4), b = ri(-5, 5), c = k * a + b - a * a;
+    return NUM(T`Find the value of $k$ that makes $f$ continuous at $x=${a}$: $$f(x)=\begin{cases} kx${sg(b)} & x<${a}\\ x^2${sg(c)} & x\ge ${a}\end{cases}$$`, k,
+      T`The two pieces must give the same value at $x=${a}$.`,
+      T`Continuity needs the pieces to meet at $x=${a}$: $$k(${a})${sg(b)} = (${a})^2${sg(c)} = ${a * a + c}.$$ So $${co(a, 'k')} = ${a * a + c - b}$, giving $k = ${k}$.`);
+  }
+  const k = ri(2, 9); let m = ri(1, 6); const ans = fr(k, m);
+  if (v === 'sin') return NUM(T`Evaluate $$\lim_{x\to 0}\frac{\sin(${k}x)}{${co(m, 'x')}}$$`, ans,
+    T`Use $\displaystyle\lim_{u\to0}\frac{\sin u}{u}=1$ with $u=${k}x$.`,
+    T`Rewrite: $$\frac{\sin(${k}x)}{${co(m, 'x')}} = ${kOverM(k, m)}\cdot\frac{\sin(${k}x)}{${k}x}\to ${kOverM(k, m)}\cdot 1 = ${ans.tex()}.$$`);
+  if (v === 'tan') return NUM(T`Evaluate $$\lim_{x\to 0}\frac{\tan(${k}x)}{${co(m, 'x')}}$$`, ans,
+    T`Write $\tan(${k}x)$ as $\dfrac{\sin(${k}x)}{\cos(${k}x)}$.`,
+    T`$$\frac{\tan(${k}x)}{${co(m, 'x')}} = ${kOverM(k, m)}\cdot\frac{\sin(${k}x)}{${k}x}\cdot\frac{1}{\cos(${k}x)}\to ${kOverM(k, m)}\cdot1\cdot1 = ${ans.tex()}.$$`);
+  do { m = ri(1, 6); } while (m === k);
+  const a2 = fr(k, m), mx = co(m, 'x');
+  return NUM(T`Evaluate $$\lim_{x\to 0}\frac{\sin(${k}x)}{\sin(${mx})}$$`, a2,
+    T`Create a $\dfrac{\sin u}{u}$ for the top and a $\dfrac{u}{\sin u}$ for the bottom.`,
+    T`$$\frac{\sin(${k}x)}{\sin(${mx})} = ${kOverM(k, m)}\cdot\frac{\sin(${k}x)}{${k}x}\cdot\frac{${mx}}{\sin(${mx})}\to ${a2.tex()}.$$`);
+}});
+
+LEVELS.push({ world: 'd', id: 'd6', title: 'The derivative as a limit', short: T`Slopes from $\lim_{h\to 0}$.`,
+learn: T`<p>The secant through $(a,f(a))$ and $(a+h,f(a+h))$ has slope $\dfrac{f(a+h)-f(a)}{h}$. Letting $h\to0$ turns the secant into the tangent: $$f'(a)=\lim_{h\to0}\frac{f(a+h)-f(a)}{h}.$$</p>
+<p><b>Example.</b> For $f(x)=x^2$ at $a=3$: $$\frac{(3+h)^2-9}{h}=\frac{6h+h^2}{h}=6+h\to6.$$</p>
+<p>The pattern is always the same: expand, subtract, factor out $h$, cancel, then let $h\to0$. Every rule in the coming levels is a shortcut for this limit.</p>`,
+gen(d) {
+  const v = pick(d === 0 ? ['quad'] : d === 1 ? ['quad', 'ident'] : ['recip', 'sqrt', 'quad']);
+  if (v === 'quad') {
+    const a = rnz(-3, 3), b = ri(-6, 6), c = ri(-5, 5), p = ri(-3, 3), k = 2 * a * p + b;
+    return NUM(T`Use the definition $$f'(${p}) = \lim_{h\to 0}\frac{f(${p}+h)-f(${p})}{h}$$ to find $f'(${p})$ for $f(x) = ${P([a, b, c])}$.`, k,
+      T`Expand $f(${p}+h)$ and subtract $f(${p})$. Every surviving term should contain $h$.`,
+      T`Expanding, $$f(${p}+h)-f(${p}) = ${polyT([[a, 2], [k, 1]], 'h')}.$$ Divide by $h$ to get $${polyT([[a, 1], [k, 0]], 'h')}$, which tends to $${k}$ as $h\to0$.`);
+  }
+  if (v === 'ident') {
+    const n = ri(2, 3), a = ri(2, 5);
+    return MC(T`The limit $$\lim_{h\to0}\frac{(${a}+h)^{${n}}-${a ** n}}{h}$$ equals $f'(a)$ for which function $f$ and point $a$?`,
+      T`f(x)=x^{${n}},\ a=${a}`,
+      [T`f(x)=x^{${n}},\ a=${a ** n}`, T`f(x)=${n}x^{${n - 1}},\ a=${a}`, T`f(x)=(${a}+x)^{${n}},\ a=${a}`, T`f(x)=x^{${n}},\ a=0`],
+      T`Match the pattern $\dfrac{f(a+h)-f(a)}{h}$. What is being raised to a power?`,
+      T`Here $f(a+h)=(${a}+h)^{${n}}$ and $f(a)=${a ** n}=${a}^{${n}}$, so $f(x)=x^{${n}}$ and $a=${a}$. The limit's value is $f'(${a})=${n * a ** (n - 1)}$.`);
+  }
+  if (v === 'recip') {
+    const k = rnz(-6, 6), p = rnz(-4, 4), ans = fr(-k, p * p);
+    return NUM(T`Use the limit definition to find $f'(${p})$ for $f(x)=\dfrac{${k}}{x}$.`, ans,
+      'Combine the two fractions over a common denominator before dividing by h.',
+      T`$$\frac{1}{h}\left(\frac{${k}}{${p}+h}-\frac{${k}}{${p}}\right) = \frac{1}{h}\cdot\frac{${-k}h}{${p}(${p}+h)} = \frac{${-k}}{${p}(${p}+h)}\to\frac{${-k}}{${p * p}} = ${ans.tex()}.$$`);
+  }
+  const p = ri(1, 5), ans = fr(1, 2 * p);
+  return NUM(T`Use the limit definition to find $f'(${p * p})$ for $f(x)=\sqrt{x}$.`, ans,
+    'Multiply the difference quotient by the conjugate.',
+    T`$$\frac{\sqrt{${p * p}+h}-${p}}{h}\cdot\frac{\sqrt{${p * p}+h}+${p}}{\sqrt{${p * p}+h}+${p}} = \frac{1}{\sqrt{${p * p}+h}+${p}}\to\frac{1}{${2 * p}}.$$`);
+}});
+
+LEVELS.push({ world: 'd', id: 'd7', title: 'Power, constant and sum rules', short: 'Differentiating polynomials and powers.',
+learn: T`<p>From the definition come the first shortcuts: $$\frac{d}{dx}c=0,\qquad \frac{d}{dx}x^n=nx^{n-1},\qquad \frac{d}{dx}\big(af+bg\big)=af'+bg'.$$</p>
+<p>The power rule works for any real exponent, so rewrite roots and reciprocals as powers first: $\sqrt{x}=x^{1/2}$ and $\dfrac1x=x^{-1}$.</p>
+<p><b>Example.</b> $\dfrac{d}{dx}\left(4x^3-\dfrac{2}{x}+6\sqrt x\right)=12x^2+\dfrac{2}{x^2}+\dfrac{3}{\sqrt x}.$</p>`,
+gen(d) {
+  if (d === 0) {
+    const cs = [rnz(-3, 3), ri(-4, 4), ri(-6, 6), ri(-9, 9)], p = ri(-2, 3), ds = pDer(cs), v = pEval(ds, p);
+    return NUM(T`Find $f'(${p})$ for $f(x)=${P(cs)}$.`, v, 'Differentiate term by term, then substitute.',
+      T`$f'(x)=${P(ds)}$, so $f'(${p})=${v.tex()}$.`);
+  }
+  if (d === 1) {
+    const n = pick([3, 4]), cs = [rnz(-4, 4), ...Array.from({ length: n - 1 }, () => ri(-5, 5)), rnz(-7, 7)];
+    const dd = pDer(cs), kept = dd.slice(); kept[kept.length - 1] = kept[kept.length - 1].add(cs[n]);
+    return MC(T`Which is the derivative of $f(x)=${P(cs)}$?`, P(dd), [
+      P(kept),
+      polyT(cs.slice(0, -1).map((c, i) => [c * (n - i), n - i])),
+      polyT(cs.slice(0, -1).map((c, i) => [c, n - i - 1])),
+      P(pAnti(cs)),
+    ], 'Bring each power down as a multiplier, then reduce the power by one. Constants vanish.',
+      T`Term by term: $\dfrac{d}{dx}\left(${P(cs)}\right) = ${P(dd)}$.`);
+  }
+  const a = rnz(-2, 3), b = ri(1, 6), c = ri(1, 6), s = pick([1, 2, 3]), p = s * s;
+  const ans = fr(3 * a * p * p).sub(fr(b, p * p)).add(fr(c, 2 * s)), cc = c === 1 ? '' : c;
+  return NUM(T`Find $f'(${p})$ for $$f(x)=${polyT([[a, 3]])} + \frac{${b}}{x} + ${cc}\sqrt{x}.$$`, ans,
+    T`Rewrite as powers: $\dfrac{${b}}{x}=${co(b, 'x^{-1}')}$ and $\sqrt{x}=x^{1/2}$.`,
+    T`$$f'(x) = ${polyT([[3 * a, 2]])} - \frac{${b}}{x^{2}} + \frac{${c}}{2\sqrt{x}}.$$ At $x=${p}$: $f'(${p}) = ${ans.tex()}$.`);
+}});
+/* ===== World 1: Differentiation, levels 8-15 ===== */
+
+LEVELS.push({ world: 'd', id: 'd8', title: 'Product and quotient rules', short: 'Derivatives of products and ratios.',
+learn: T`$$(fg)'=f'g+fg',\qquad\left(\frac fg\right)'=\frac{f'g-fg'}{g^2}.$$
+<p>The derivative of a product is <em>not</em> the product of the derivatives. In the quotient rule the order matters because of the minus sign: derivative of the top times the bottom, minus the top times the derivative of the bottom, all over the bottom squared.</p>
+<p><b>Example.</b> If $f(2)=3$, $f'(2)=-1$, $g(2)=4$ and $g'(2)=5$, then $(fg)'(2)=(-1)(4)+(3)(5)=11$.</p>`,
+gen(d) {
+  const a = ri(1, 4), f = ri(-5, 5), fp = ri(-5, 5), g = rnz(-5, 5), gp = ri(-5, 5);
+  const tab = T`$$\begin{array}{c|cccc} x & f(x) & f'(x) & g(x) & g'(x)\\ \hline ${a} & ${f} & ${fp} & ${g} & ${gp}\end{array}$$`;
+  const kind = pick(d === 0 ? ['prod'] : d === 1 ? ['prod', 'quot'] : ['quot', 'xsq', 'overx']);
+  let h, ans, sol, hint;
+  if (kind === 'prod') {
+    h = T`f(x)\,g(x)`; ans = fr(fp * g + f * gp); hint = T`Product rule: $(fg)'=f'g+fg'$.`;
+    sol = T`$h'(${a}) = f'(${a})g(${a}) + f(${a})g'(${a}) = (${fp})(${g}) + (${f})(${gp}) = ${ans.tex()}$.`;
+  } else if (kind === 'quot') {
+    h = T`\dfrac{f(x)}{g(x)}`; ans = fr(fp * g - f * gp, g * g); hint = T`Quotient rule: $\left(\dfrac fg\right)'=\dfrac{f'g-fg'}{g^2}$.`;
+    sol = T`$$h'(${a}) = \frac{f'(${a})g(${a}) - f(${a})g'(${a})}{g(${a})^2} = \frac{(${fp})(${g}) - (${f})(${gp})}{(${g})^2} = ${ans.tex()}.$$`;
+  } else if (kind === 'xsq') {
+    h = T`x^2 f(x)`; ans = fr(2 * a * f + a * a * fp); hint = T`Product rule, with $x^2$ as one of the factors.`;
+    sol = T`$h'(x) = 2x\,f(x) + x^2 f'(x)$, so $h'(${a}) = 2(${a})(${f}) + (${a})^2(${fp}) = ${ans.tex()}$.`;
+  } else {
+    h = T`\dfrac{g(x)}{x}`; ans = fr(a * gp - g, a * a); hint = T`Quotient rule, with $x$ in the denominator.`;
+    sol = T`$$h'(x) = \frac{x\,g'(x) - g(x)}{x^2},\qquad h'(${a}) = \frac{(${a})(${gp}) - (${g})}{(${a})^2} = ${ans.tex()}.$$`;
+  }
+  return NUM(T`Use the table. ${tab} Find $h'(${a})$ where $h(x) = ${h}$.`, ans, hint, sol);
+}});
+
+LEVELS.push({ world: 'd', id: 'd9', title: 'The chain rule', short: 'Composite functions: outside, then inside.',
+learn: T`<p>For a composite $h(x)=f(g(x))$: $$h'(x)=f'\big(g(x)\big)\,g'(x).$$ Differentiate the outer function leaving the inside alone, then multiply by the derivative of the inside.</p>
+<p><b>Example.</b> $\dfrac{d}{dx}(3x+1)^5=5(3x+1)^4\cdot3=15(3x+1)^4$.</p>
+<p>The most common mistake is forgetting the final factor $g'(x)$.</p>`,
+gen(d) {
+  if (d === 0 || Math.random() < 0.3) {
+    const a = ri(0, 2), b = a + ri(1, 3), m = rnz(-5, 5), k = rnz(-5, 5), j = ri(-5, 5);
+    const fa = ri(-5, 5), fb = ri(-5, 5), gb = ri(-5, 5), gpb = ri(-5, 5);
+    return NUM(T`Use the table to find $h'(${a})$ where $h(x)=f\big(g(x)\big)$. $$\begin{array}{c|cccc} x & f(x) & f'(x) & g(x) & g'(x)\\ \hline ${a} & ${fa} & ${j} & ${b} & ${m}\\ ${b} & ${fb} & ${k} & ${gb} & ${gpb}\end{array}$$`, k * m,
+      T`Chain rule: $h'(${a}) = f'\big(g(${a})\big)\,g'(${a})$. Read off $g(${a})$ first.`,
+      T`$g(${a})=${b}$, so $h'(${a}) = f'(${b})\,g'(${a}) = (${k})(${m}) = ${k * m}$. Note $f'(${a})$ is not used.`);
+  }
+  const v = pick(d === 1 ? ['pow', 'sin', 'exp', 'sqrt'] : ['pow', 'exp', 'sqrt', 'lncos']);
+  if (v === 'pow') {
+    const p = pick([2, 3, 4, 5, -2, -3]), q = rnz(-6, 6), n = ri(3, 6), inner = P([p, q]);
+    return MC(T`Differentiate $y=(${inner})^{${n}}$.`, T`${n * p}(${inner})^{${n - 1}}`,
+      [T`${n}(${inner})^{${n - 1}}`, T`${n * p}(${inner})^{${n}}`, T`${p}(${inner})^{${n - 1}}`, T`${n - 1}(${inner})^{${n - 2}}`],
+      'Outer function: a power. Inner function: a linear expression. Multiply their derivatives.',
+      T`Outer: $u^{${n}}\to ${n}u^{${n - 1}}$. Inner: $u=${inner}$, $u'=${p}$. So $y' = ${n}(${inner})^{${n - 1}}\cdot(${p}) = ${n * p}(${inner})^{${n - 1}}$.`);
+  }
+  if (v === 'sin') {
+    const k = ri(2, 5);
+    return MC(T`Differentiate $y=\sin(${k}x^2)$.`, T`${2 * k}x\cos(${k}x^2)`,
+      [T`\cos(${k}x^2)`, T`${2 * k}x\sin(${k}x^2)`, T`${k}\cos(${k}x^2)`, T`-${2 * k}x\cos(${k}x^2)`],
+      'The derivative of sin u is cos u, times u-prime.',
+      T`With $u=${k}x^2$, $u'=${2 * k}x$: $y'=\cos(${k}x^2)\cdot ${2 * k}x$.`);
+  }
+  if (v === 'exp') {
+    const k = ri(2, 5);
+    return MC(T`Differentiate $y=e^{${k}x^2}$.`, T`${2 * k}x\,e^{${k}x^2}`,
+      [T`e^{${k}x^2}`, T`${k}x^2e^{${k}x^2-1}`, T`${2 * k}x\,e^{${2 * k}x}`],
+      T`$\dfrac{d}{dx}e^u = e^u\,u'$. The exponent stays as it is.`,
+      T`With $u=${k}x^2$, $u'=${2 * k}x$: $y' = e^{${k}x^2}\cdot ${2 * k}x$.`);
+  }
+  if (v === 'sqrt') {
+    const c = ri(1, 9);
+    return MC(T`Differentiate $y=\sqrt{x^2+${c}}$.`, T`\dfrac{x}{\sqrt{x^2+${c}}}`,
+      [T`\dfrac{1}{2\sqrt{x^2+${c}}}`, T`\dfrac{2x}{\sqrt{x^2+${c}}}`, T`x\sqrt{x^2+${c}}`],
+      T`Write $y=(x^2+${c})^{1/2}$.`,
+      T`$y' = \tfrac12(x^2+${c})^{-1/2}\cdot 2x = \dfrac{x}{\sqrt{x^2+${c}}}$.`);
+  }
+  return MC(T`Differentiate $y=\ln(\cos x)$.`, T`-\tan x`, [T`\dfrac{1}{\cos x}`, T`\tan x`, T`-\dfrac{1}{\sin x}`],
+    T`$\dfrac{d}{dx}\ln u = \dfrac{u'}{u}$.`,
+    T`$y' = \dfrac{1}{\cos x}\cdot(-\sin x) = -\tan x$.`);
+}});
+
+const DERIV_BANK = {
+  ln: () => { const k = ri(2, 9); return [T`\ln(${k}x)`, T`\dfrac{1}{x}`, [T`\dfrac{${k}}{x}`, T`\dfrac{1}{${k}x}`, T`${k}\ln x`], 'Use a log law before differentiating.', T`$\ln(${k}x) = \ln ${k} + \ln x$ and $\ln ${k}$ is a constant, so $y' = \dfrac1x$. The chain rule agrees: $\dfrac{${k}}{${k}x} = \dfrac1x$.`]; },
+  exp: () => { const k = ri(2, 9); return [T`e^{${k}x}`, T`${k}e^{${k}x}`, [T`e^{${k}x}`, T`${k}xe^{${k}x-1}`, T`\dfrac{1}{${k}}e^{${k}x}`], T`$\dfrac{d}{dx}e^u = e^u\,u'$.`, T`With $u=${k}x$, $u'=${k}$: $y' = ${k}e^{${k}x}$. The power rule does not apply to $e^x$.`]; },
+  sin: () => { const k = ri(2, 9); return [T`\sin(${k}x)`, T`${k}\cos(${k}x)`, [T`\cos(${k}x)`, T`-${k}\cos(${k}x)`, T`-${k}\sin(${k}x)`], 'Sine differentiates to cosine; then apply the chain rule.', T`$y' = \cos(${k}x)\cdot ${k}$.`]; },
+  cos: () => { const k = ri(2, 9); return [T`\cos(${k}x)`, T`-${k}\sin(${k}x)`, [T`${k}\sin(${k}x)`, T`-\sin(${k}x)`, T`-${k}\cos(${k}x)`], 'Cosine differentiates to minus sine; then apply the chain rule.', T`$y' = -\sin(${k}x)\cdot ${k}$.`]; },
+  tan: () => [T`\tan x`, T`\sec^2 x`, [T`\cot x`, T`-\sec^2 x`, T`\sec x\tan x`], T`Write $\tan x = \dfrac{\sin x}{\cos x}$ and use the quotient rule.`, T`$y' = \dfrac{\cos^2x+\sin^2x}{\cos^2x} = \dfrac{1}{\cos^2 x} = \sec^2 x$.`],
+  xlnx: () => [T`x\ln x`, T`\ln x + 1`, [T`\dfrac{1}{x}`, T`\ln x`, T`x + \ln x`], 'This is a product.', T`Product rule: $1\cdot\ln x + x\cdot\dfrac1x = \ln x + 1$.`],
+  ax: () => { const a = pick([2, 3, 5, 10]); return [T`${a}^x`, T`${a}^x\ln ${a}`, [T`x\cdot ${a}^{x-1}`, T`${a}^x`, T`\dfrac{${a}^x}{\ln ${a}}`], T`Write $${a}^x = e^{x\ln ${a}}$.`, T`$y' = e^{x\ln ${a}}\cdot\ln ${a} = ${a}^x\ln ${a}$. The power rule is for $x^n$, not $a^x$.`]; },
+  lnpoly: () => { const c = ri(1, 9); return [T`\ln(x^2+${c})`, T`\dfrac{2x}{x^2+${c}}`, [T`\dfrac{1}{x^2+${c}}`, T`\dfrac{2x}{\ln(x^2+${c})}`, T`\dfrac{1}{2x}`], T`$\dfrac{d}{dx}\ln u = \dfrac{u'}{u}$.`, T`$y' = \dfrac{2x}{x^2+${c}}$.`]; },
+  arctan: () => [T`\arctan x`, T`\dfrac{1}{1+x^2}`, [T`\sec^2 x`, T`\dfrac{1}{\sqrt{1-x^2}}`, T`-\dfrac{1}{1+x^2}`], T`Differentiate $\tan y = x$ implicitly.`, T`From $\tan y = x$: $\sec^2 y\,y' = 1$, so $y' = \dfrac{1}{1+\tan^2 y} = \dfrac{1}{1+x^2}$.`],
+  esin: () => [T`e^x\sin x`, T`e^x(\sin x + \cos x)`, [T`e^x\cos x`, T`e^x(\sin x - \cos x)`, T`e^x\sin x`], 'This is a product.', T`Product rule: $e^x\sin x + e^x\cos x = e^x(\sin x+\cos x)$.`],
+};
+LEVELS.push({ world: 'd', id: 'd10', title: 'Exponential, log and trig derivatives', short: 'The standard transcendental derivatives.',
+learn: T`$$\frac{d}{dx}e^x=e^x,\quad \frac{d}{dx}\ln x=\frac1x,\quad \frac{d}{dx}\sin x=\cos x,\quad \frac{d}{dx}\cos x=-\sin x,$$ $$\frac{d}{dx}\tan x=\sec^2x,\quad \frac{d}{dx}a^x=a^x\ln a,\quad \frac{d}{dx}\arctan x=\frac{1}{1+x^2}.$$
+<p>Combine these with the chain rule: $\dfrac{d}{dx}e^{3x}=3e^{3x}$ and $\dfrac{d}{dx}\ln(x^2+1)=\dfrac{2x}{x^2+1}$. Note that $\ln(kx)=\ln k+\ln x$, so its derivative is just $\dfrac1x$.</p>`,
+gen(d) {
+  const key = pick(d === 0 ? ['ln', 'exp', 'sin', 'cos'] : d === 1 ? ['tan', 'xlnx', 'ax', 'exp', 'sin'] : ['lnpoly', 'arctan', 'esin', 'ax', 'xlnx']);
+  const [y, c, w, hint, sol] = DERIV_BANK[key]();
+  return MC(T`Find $\dfrac{dy}{dx}$ for $y = ${y}$.`, c, w, hint, sol);
+}});
+
+LEVELS.push({ world: 'd', id: 'd11', title: 'Implicit differentiation', short: 'Slopes on curves that are not functions.',
+learn: T`<p>Some curves, like $x^2+y^2=25$, are not given as $y=f(x)$. Differentiate both sides with respect to $x$, treating $y$ as a function of $x$, so every $y$ term picks up a factor $\dfrac{dy}{dx}$ by the chain rule.</p>
+$$x^2+y^2=25\ \Rightarrow\ 2x+2y\frac{dy}{dx}=0\ \Rightarrow\ \frac{dy}{dx}=-\frac xy.$$
+<p>At $(3,4)$ the slope is $-\tfrac34$. Products like $xy$ need the product rule: $\dfrac{d}{dx}(xy)=y+x\dfrac{dy}{dx}$.</p>`,
+gen(d) {
+  const v = d === 0 ? 'circle' : d === 1 ? pick(['circle', 'ellipse']) : pick(['ellipse', 'mixed', 'mixed']);
+  if (v === 'circle') {
+    let [x0, y0] = pick([[3, 4], [5, 12], [6, 8], [8, 15]]);
+    if (Math.random() < 0.5) [x0, y0] = [y0, x0];
+    x0 *= pick([1, -1]); y0 *= pick([1, -1]);
+    const ans = fr(-x0, y0);
+    return NUM(T`Find $\dfrac{dy}{dx}$ at the point $(${x0}, ${y0})$ on the circle $x^2+y^2=${x0 * x0 + y0 * y0}$.`, ans,
+      T`Differentiate both sides; $y^2$ becomes $2y\dfrac{dy}{dx}$.`,
+      T`$2x + 2y\dfrac{dy}{dx} = 0$, so $\dfrac{dy}{dx} = -\dfrac{x}{y}$. At $(${x0}, ${y0})$ this is $-\dfrac{(${x0})}{(${y0})} = ${ans.tex()}$.`);
+  }
+  if (v === 'ellipse') {
+    const p = ri(1, 4), q = ri(2, 5), x0 = rnz(-3, 3), y0 = rnz(-3, 3), R = p * x0 * x0 + q * y0 * y0, ans = fr(-p * x0, q * y0);
+    return NUM(T`Find $\dfrac{dy}{dx}$ at $(${x0}, ${y0})$ on the ellipse $${co(p, 'x^2')} + ${q}y^2 = ${R}$.`, ans,
+      T`Differentiate both sides with respect to $x$, then solve for $\dfrac{dy}{dx}$.`,
+      T`$${2 * p}x + ${2 * q}y\dfrac{dy}{dx} = 0$, so $\dfrac{dy}{dx} = -\dfrac{${co(p, 'x')}}{${q}y}$. At $(${x0}, ${y0})$: $${ans.tex()}$.`);
+  }
+  let x0, y0; do { x0 = ri(-3, 3); y0 = ri(-3, 3); } while ((x0 === 0 && y0 === 0) || x0 + 2 * y0 === 0);
+  const C = x0 * x0 + x0 * y0 + y0 * y0, ans = fr(-(2 * x0 + y0), x0 + 2 * y0);
+  return NUM(T`Find $\dfrac{dy}{dx}$ at $(${x0}, ${y0})$ on the curve $x^2 + xy + y^2 = ${C}$.`, ans,
+    T`Use the product rule on $xy$: its derivative is $y + x\dfrac{dy}{dx}$.`,
+    T`$$2x + y + x\frac{dy}{dx} + 2y\frac{dy}{dx} = 0\ \Rightarrow\ \frac{dy}{dx} = -\frac{2x+y}{x+2y}.$$ At $(${x0}, ${y0})$: $-\dfrac{${2 * x0 + y0}}{${x0 + 2 * y0}} = ${ans.tex()}$.`);
+}});
+
+
+/* Implicit functions: products, trig/exp relations and second derivatives. */
+LEVELS.push({ world: 'd', id: 'd16', title: 'Implicit functions: more forms', short: 'Products, trig/exp relations and second derivatives.',
+learn: T`<p>Differentiate both sides in \(x\), remembering that \(y\) is a function of \(x\). Collect the \(dy/dx\) terms, then solve. For a second derivative, differentiate the first derivative implicitly again.</p>`,
+gen(d){
+  const cases=[
+   {rel:T`x^2+y^2=25`, ask:T`\frac{dy}{dx}`, ans:T`-\frac{x}{y}`, wrong:[T`\frac{x}{y}`,T`-\frac{y}{x}`,T`\frac{y}{x}`]},
+   {rel:T`xy=4`, ask:T`\frac{dy}{dx}`, ans:T`-\frac{y}{x}`, wrong:[T`\frac{y}{x}`,T`-\frac{x}{y}`,T`\frac{x}{y}`]},
+   {rel:T`x^2+xy+y^2=7`, ask:T`\frac{dy}{dx}`, ans:T`-\frac{2x+y}{x+2y}`, wrong:[T`-\frac{2x+y}{2x+y}`,T`\frac{2x+y}{x+2y}`,T`-\frac{x+2y}{2x+y}`]},
+   {rel:T`\sin y=x`, ask:T`\frac{dy}{dx}`, ans:T`\frac{1}{\cos y}`, wrong:[T`\cos y`,T`-\frac{1}{\cos y}`,T`\frac{1}{\sin y}`]},
+   {rel:T`e^y=xy`, ask:T`\frac{dy}{dx}`, ans:T`\frac{y}{e^y-x}`, wrong:[T`\frac{y}{e^y+x}`,T`\frac{x}{e^y-y}`,T`\frac{e^y}{y-x}`]},
+   {rel:T`x^3+y^3=6xy`, ask:T`\frac{dy}{dx}`, ans:T`\frac{2y-x^2}{y^2-2x}`, wrong:[T`\frac{2y+x^2}{y^2-2x}`,T`\frac{x^2-2y}{y^2-2x}`,T`\frac{2y-x^2}{y^2+2x}`]},
+   {rel:T`x^2+y^2=1`, ask:T`\frac{d^2y}{dx^2}`, ans:T`-\frac{1}{y^3}`, wrong:[T`\frac{1}{y^3}`,T`-\frac{x}{y^3}`,T`-\frac{1}{y^2}`]}
+  ];
+  const c=pick(cases);
+  return MC(T`Given $${c.rel}$, find $${c.ask}$.`,c.ans,c.wrong,'Differentiate both sides in x, then collect the dy/dx terms.',T`Treat y as a function of x.`);
+}});
+
+LEVELS.push({ world: 'd', id: 'd12', title: "L'Hôpital's rule", short: 'Derivatives resolve indeterminate forms.',
+learn: T`<p>If $f(x)$ and $g(x)$ both tend to $0$ (or both to $\pm\infty$), then $$\lim\frac{f(x)}{g(x)}=\lim\frac{f'(x)}{g'(x)},$$ provided the right-hand limit exists. Differentiate top and bottom <em>separately</em>; this is not the quotient rule.</p>
+<p><b>Example.</b> $\displaystyle\lim_{x\to0}\frac{e^{2x}-1}{x}=\lim_{x\to0}\frac{2e^{2x}}{1}=2$.</p>
+<p>Check the form before every application. If the result is still $\tfrac00$, apply the rule again.</p>`,
+gen(d) {
+  const v = pick(d === 0 ? ['A', 'D'] : d === 1 ? ['A', 'B', 'D', 'E'] : ['C', 'F', 'B']);
+  const k = ri(1, 6), m = ri(1, 5);
+  if (v === 'A') return NUM(T`Evaluate $$\lim_{x\to0}\frac{e^{${co(k, 'x')}}-1}{${co(m, 'x')}}$$`, fr(k, m),
+    T`Substitution gives $\tfrac00$. Differentiate the top and the bottom separately.`,
+    T`Form $\tfrac00$, so $$\lim_{x\to0}\frac{${co(k, T`e^{${co(k, 'x')}}`)}}{${m}} = ${fr(k, m).tex()}.$$`);
+  if (v === 'B') return NUM(T`Evaluate $$\lim_{x\to0}\frac{\sin(${co(k, 'x')})}{e^{${co(m, 'x')}}-1}$$`, fr(k, m),
+    'Both top and bottom tend to 0.',
+    T`$$\lim_{x\to0}\frac{${co(k, T`\cos(${co(k, 'x')})`)}}{${co(m, T`e^{${co(m, 'x')}}`)}} = ${fr(k, m).tex()}.$$`);
+  if (v === 'C') { const kk = ri(1, 5); return NUM(T`Evaluate $$\lim_{x\to0}\frac{1-\cos(${co(kk, 'x')})}{x^2}$$`, fr(kk * kk, 2),
+    'You will need to apply the rule twice.',
+    T`$$\lim\frac{${co(kk, T`\sin(${co(kk, 'x')})`)}}{2x} = \lim\frac{${co(kk * kk, T`\cos(${co(kk, 'x')})`)}}{2} = ${fr(kk * kk, 2).tex()}.$$`); }
+  if (v === 'D') { const kk = ri(2, 6); return NUM(T`Evaluate $$\lim_{x\to1}\frac{\ln x}{x^{${kk}}-1}$$`, fr(1, kk),
+    T`At $x=1$, $\ln 1 = 0$ and $1^{${kk}}-1=0$.`,
+    T`$$\lim_{x\to1}\frac{1/x}{${kk}${kk === 2 ? 'x' : `x^{${kk - 1}}`}} = \frac{1}{${kk}}.$$`); }
+  if (v === 'E') { const n = ri(2, 5); return NUM(T`Evaluate $$\lim_{x\to\infty}\frac{x^{${n}}}{e^{x}}$$`, 0,
+    T`The form is $\tfrac{\infty}{\infty}$. Apply the rule repeatedly: what happens to the power of $x$?`,
+    T`After ${n} applications the top is the constant $${n}!$ while the bottom is still $e^x\to\infty$, so the limit is $0$. Exponentials beat powers.`); }
+  const kk = ri(1, 5);
+  return NUM(T`Evaluate $$\lim_{x\to0}\frac{e^{${co(kk, 'x')}}-1-${co(kk, 'x')}}{x^2}$$`, fr(kk * kk, 2),
+    'After one application the form is still 0/0.',
+    T`$$\lim\frac{${co(kk, T`e^{${co(kk, 'x')}}`)}-${kk}}{2x} = \lim\frac{${co(kk * kk, T`e^{${co(kk, 'x')}}`)}}{2} = ${fr(kk * kk, 2).tex()}.$$`);
+}});
+
+LEVELS.push({ world: 'd', id: 'd13', title: 'Tangent lines and rates', short: 'Tangents, velocity and related rates.',
+learn: T`<p>The tangent line at $x=a$ passes through $(a,f(a))$ with slope $f'(a)$: $$y=f(a)+f'(a)(x-a).$$</p>
+<p>A derivative is a rate of change. If $s(t)$ is position, $s'(t)$ is velocity. In <em>related rates</em> problems, write an equation linking the quantities, differentiate with respect to time, then substitute the values at the moment you care about.</p>
+<p><b>Example.</b> An oil slick off Kingston Harbour stays circular. From $A=\pi r^2$, $\dfrac{dA}{dt}=2\pi r\dfrac{dr}{dt}$. If $r=20$ m and $\dfrac{dr}{dt}=3$ m/min, the area grows at $120\pi$ m²/min.</p>`,
+gen(d) {
+  const v = pick(d === 0 ? ['tangent', 'canoe'] : d === 1 ? ['tangent', 'spill', 'buoy'] : ['ships', 'spill', 'buoy', 'tangent']);
+  if (v === 'tangent') {
+    const a = rnz(-2, 3), b = ri(-5, 5), c = ri(-6, 6), p = ri(-2, 3), m = 2 * a * p + b, y0 = a * p * p + b * p + c, ic = y0 - m * p;
+    return NUM(T`The tangent line to $y=${P([a, b, c])}$ at $x=${p}$ can be written $y=mx+c$. Find $c$.`, ic,
+      'Find the slope m and the point of tangency first.',
+      T`Slope: $y'=${P([2 * a, b])}$, so $m=${m}$. Point: $(${p}, ${y0})$. Then $c = y_0 - m x_0 = ${y0} - (${m})(${p}) = ${ic}$.`);
+  }
+  if (v === 'canoe') {
+    const A = ri(-6, 2), B = ri(0, 10), p = ri(1, 4), vel = 3 * p * p + 2 * A * p + B;
+    return NUM(T`A fishing canoe leaving Port Antonio has position $s(t)=${P([1, A, B, 0], 't')}$ metres after $t$ seconds. Find its velocity, in m/s, at $t=${p}$.`, vel,
+      'Velocity is the derivative of position.',
+      T`$v(t)=s'(t)=${P([3, 2 * A, B], 't')}$, so $v(${p})=${vel}$ m/s.`);
+  }
+  if (v === 'spill') {
+    const rr = ri(2, 6), R = ri(1, 8) * 5;
+    return NUM(T`An oil spill off Kingston Harbour spreads in a circle whose radius grows at ${rr} m/min. How fast is the area growing, in m²/min, when the radius is ${R} m?` + PI_NOTE, 2 * R * rr,
+      T`Differentiate $A=\pi r^2$ with respect to $t$.`,
+      T`$\dfrac{dA}{dt} = 2\pi r\dfrac{dr}{dt} = 2\pi(${R})(${rr}) = ${2 * R * rr}\pi$ m²/min.`, true);
+  }
+  if (v === 'buoy') {
+    const rr = ri(1, 3), R = ri(2, 6);
+    return NUM(T`A spherical marker buoy is being inflated so its radius grows at ${rr} cm/s. How fast is its volume increasing, in cm³/s, when the radius is ${R} cm?` + PI_NOTE, 4 * R * R * rr,
+      T`Differentiate $V=\tfrac43\pi r^3$ with respect to $t$.`,
+      T`$\dfrac{dV}{dt} = 4\pi r^2\dfrac{dr}{dt} = 4\pi(${R})^2(${rr}) = ${4 * R * R * rr}\pi$ cm³/s.`, true);
+  }
+  const [a0, b0, c0] = pick([[3, 4, 5], [5, 12, 13], [8, 15, 17]]), s = ri(1, Math.floor(40 / b0)), t = ri(1, 5);
+  const [u, w, z] = [a0 * s, b0 * s, c0 * s];
+  return NUM(T`Two ships leave Port Royal at noon. One sails due east at ${u} km/h, the other due north at ${w} km/h. How fast, in km/h, is the distance between them increasing ${t} hours later?`, z,
+    'Write the distance between the ships as a function of t.',
+    T`After $t$ hours the ships are $${u}t$ and $${w}t$ km from port, so $D=\sqrt{(${u}t)^2+(${w}t)^2} = ${z}t$. Hence $\dfrac{dD}{dt}=${z}$ km/h at every moment, including $t=${t}$.`);
+}});
+
+LEVELS.push({ world: 'd', id: 'd14', title: 'Optimisation', short: 'Finding the maxima and minima that matter.',
+learn: T`<p>Local maxima and minima occur where $f'(x)=0$ or $f'$ is undefined. The second derivative sorts them: $f''>0$ means a minimum (concave up) and $f''<0$ means a maximum.</p>
+<p>For an applied problem: name the variables, use the constraint to write the quantity as a function of <em>one</em> variable, differentiate, set the derivative to zero, and check you have the kind of extremum you want.</p>
+<p><b>Example.</b> A farmer in St. Elizabeth has 80 m of fence for a rectangular pen against a river. With sides $y, x, y$ and $x+2y=80$: $A=y(80-2y)$, $A'=80-4y=0$, so $y=20$, $x=40$, and the largest area is $800$ m².</p>`,
+gen(d) {
+  const v = pick(d === 0 ? ['vx'] : d === 1 ? ['vval', 'cubic', 'pen', 'mango'] : ['cubic', 'pen', 'mango', 'box']);
+  if (v === 'vx' || v === 'vval') {
+    const a = rnz(-3, 3), h = ri(-4, 4), b = -2 * a * h, c = ri(-6, 6), kind = a > 0 ? 'minimum' : 'maximum', val = a * h * h + b * h + c;
+    const setup = T`$f'(x)=${P([2 * a, b])}=0$ gives $x=${h}$, and $f''=${2 * a}${a > 0 ? '>' : '<'}0$ confirms a ${kind}.`;
+    if (v === 'vx') return NUM(T`At what $x$ does $f(x)=${P([a, b, c])}$ reach its ${kind}?`, h, 'Set the derivative equal to zero.', setup);
+    return NUM(T`Find the ${kind} value of $f(x)=${P([a, b, c])}$.`, val, 'Find where the derivative is zero, then evaluate f there.', setup + T` The ${kind} value is $f(${h})=${val}$.`);
+  }
+  if (v === 'cubic') {
+    const p = ri(1, 3), c = ri(-5, 5), f = P([1, 0, -3 * p * p, c]);
+    const setup = T`$f'(x)=3x^2-${3 * p * p}=0$ at $x=\pm${p}$. Since $f''(x)=6x$, $x=-${p}$ is a local maximum and $x=${p}$ a local minimum.`;
+    if (Math.random() < 0.5) return NUM(T`Find the $x$-coordinate of the local minimum of $f(x)=${f}$.`, p, 'Solve f\'(x) = 0 and use the second derivative.', setup);
+    return NUM(T`Find the local maximum value of $f(x)=${f}$.`, 2 * p ** 3 + c, 'Solve f\'(x) = 0, decide which point is the maximum, then evaluate f there.', setup + T` So the maximum value is $f(-${p})=${2 * p ** 3 + c}$.`);
+  }
+  if (v === 'pen') {
+    const k = ri(5, 25), L = 4 * k;
+    return NUM(`A farmer in St. Elizabeth has ${L} m of fencing to enclose a rectangular goat pen along a straight river bank. No fence is needed on the river side. What is the largest possible area, in m²?`, 2 * k * k,
+      T`Let the two sides touching the river be $y$. Then the far side is $${L}-2y$.`,
+      T`$A = y(${L}-2y)$, so $A' = ${L}-4y = 0$ at $y=${k}$. The far side is $${2 * k}$ m and the area is $${k}\times${2 * k} = ${2 * k * k}$ m².`);
+  }
+  if (v === 'mango') {
+    const B = ri(2, 6), ps = ri(4, 12) * 5, A = 2 * B * ps;
+    return NUM(T`A vendor at Coronation Market finds she sells $q=${A}-${B}p$ mangoes a day when she charges $p$ Jamaican dollars each. What price maximises her daily revenue?`, ps,
+      'Revenue is price times quantity sold.',
+      T`$R(p)=p(${A}-${B}p)=${A}p-${B}p^2$. Then $R'(p)=${A}-${2 * B}p=0$ at $p=${ps}$, and $R''<0$ confirms a maximum.`);
+  }
+  const k = ri(1, 6), s = 6 * k;
+  return NUM(`A boatyard in Port Antonio makes an open box by cutting equal squares of side x cm from the corners of a ${s} cm square sheet and folding up the sides. Which x gives the largest volume?`, k,
+    T`$V(x)=x(${s}-2x)^2$. Factor $V'(x)$ rather than expanding everything.`,
+    T`$V'(x)=(${s}-2x)^2-4x(${s}-2x)=(${s}-2x)(${s}-6x)$. The root $x=${s / 2}$ gives no box, so the maximum is at $x=${k}$ cm.`);
+}});
+
+LEVELS.push({ world: 'd', id: 'd15', boss: true, win: BOSS_WIN, th: BOSS_THRESH, title: 'Differentiation review', short: 'Mixed questions from every level.',
+learn: T`<p>This review draws questions from every differentiation level at the harder settings. To master it, score ${BOSS_THRESH} of your last ${BOSS_WIN}.</p>
+<p>When a question does not tell you which technique to use, ask: is it a product, a quotient or a composite? Which rule applies? Choosing the method is part of mastery.</p>`,
+gen: bossGen('d') });
+/* ===== World 2: Integration, levels 1-7 ===== */
+
+LEVELS.push({ world: 'i', id: 'i1', title: 'Riemann sums', short: 'Approximating area with rectangles.',
+learn: T`<p>Split $[a,b]$ into $n$ equal pieces of width $\Delta x=\dfrac{b-a}{n}$ and build a rectangle on each, with height $f$ evaluated at the left end, right end or midpoint: $$\sum_{i=1}^{n} f(x_i^*)\,\Delta x.$$</p>
+<p>For an increasing function, left sums underestimate and right sums overestimate. The definite integral is the limit as $n\to\infty$: $$\int_a^b f(x)\,dx=\lim_{n\to\infty}\sum_{i=1}^n f(x_i^*)\,\Delta x.$$</p>
+<p>The same idea turns a table of speeds into an estimate of distance: speed times time on each interval, added up.</p>`,
+gen(d) {
+  const method = d === 0 ? pick(['left', 'right']) : pick(['left', 'right', 'midpoint']);
+  if (d > 0 && Math.random() < 0.45) {
+    const m = method === 'midpoint' ? pick(['left', 'right']) : method, half = d === 2 && Math.random() < 0.5, h = half ? fr(1, 2) : fr(1);
+    const vs = Array.from({ length: 5 }, () => ri(8, 30)), ts = [0, 1, 2, 3, 4].map(i => String(half ? i / 2 : i));
+    const used = m === 'left' ? vs.slice(0, 4) : vs.slice(1), ans = h.mul(used.reduce((a, b) => a + b, 0));
+    return NUM(T`A fishing boat leaving Ocho Rios records its speed every ${half ? 'half hour' : 'hour'}: $$\begin{array}{c|ccccc} t\ (\text{h}) & ${ts.join(' & ')}\\ \hline v\ (\text{km/h}) & ${vs.join(' & ')}\end{array}$$ Use a ${m} Riemann sum over these four intervals to estimate the distance travelled, in km.`, ans,
+      T`Each interval lasts $${h.tex()}$ h. A ${m} sum uses the speed at the ${m === 'left' ? 'start' : 'end'} of each interval.`,
+      T`$$\text{distance}\approx ${h.tex()}\,(${used.join(' + ')}) = ${ans.tex()}\ \text{km}.$$`);
+  }
+  const cs = Math.random() < 0.5 ? [1, 0, ri(0, 4)] : [ri(1, 3), ri(0, 5)];
+  const dx = d === 2 ? pick([1, 2]) : 1, n = 4, a = ri(0, 2), b = a + n * dx;
+  const pts = Array.from({ length: n }, (_, i) => method === 'left' ? fr(a + i * dx) : method === 'right' ? fr(a + (i + 1) * dx) : fr(2 * a + (2 * i + 1) * dx, 2));
+  const vals = pts.map(t => pEval(cs, t)), ans = vals.reduce((s, v) => s.add(v), fr(0)).mul(dx);
+  return NUM(T`Estimate $$\int_{${a}}^{${b}}\left(${P(cs)}\right)dx$$ using a ${method} Riemann sum with $n=${n}$ equal subintervals.`, ans,
+    T`$\Delta x = \dfrac{${b}-${a}}{${n}} = ${dx}$. List the ${method === 'midpoint' ? 'midpoints' : method + ' endpoints'} first.`,
+    T`$\Delta x = ${dx}$ and the sample points are $${pts.map(p => p.tex()).join(',\\ ')}$. $$S = ${dx}\left(${vals.map(v => v.tex()).join(' + ')}\right) = ${ans.tex()}.$$`);
+}});
+
+LEVELS.push({ world: 'i', id: 'i2', title: 'The definite integral as signed area', short: 'Geometry, symmetry and integral properties.',
+learn: T`<p>$\displaystyle\int_a^b f(x)\,dx$ is the <em>signed</em> area between the graph and the $x$-axis: area above the axis counts positive, area below counts negative. Simple shapes can be measured with geometry: a trapezoid under a line, a semicircle under $y=\sqrt{r^2-x^2}$.</p>
+<p>Useful properties: $$\int_a^b f+\int_b^c f=\int_a^c f,\qquad \int_b^a f=-\int_a^b f,$$ $$\int_a^b (kf+m)\,dx=k\int_a^b f\,dx+m(b-a).$$</p>
+<p>If $f$ is odd, $\displaystyle\int_{-a}^{a}f(x)\,dx=0$: the areas on either side cancel.</p>`,
+gen(d) {
+  const v = pick(d === 0 ? ['lin', 'props'] : d === 1 ? ['lin', 'semi', 'props'] : ['semi', 'odd', 'props']);
+  if (v === 'lin') {
+    const a = ri(-3, 1), b = a + ri(1, 4), m = rnz(-3, 3), c = ri(-4, 4), fa = m * a + c, fb = m * b + c;
+    const ans = fr(m * (b * b - a * a), 2).add(c * (b - a));
+    return NUM(T`Evaluate $\displaystyle\int_{${a}}^{${b}} (${P([m, c])})\,dx$ by treating it as a signed area.`, ans,
+      'The graph is a straight line, so the region is a trapezoid (or two triangles). Area below the axis counts as negative.',
+      T`Signed area under a line is the width times the average height. Width $${b - a}$; heights $f(${a})=${fa}$ and $f(${b})=${fb}$: $$${b - a}\cdot\frac{${fa}+(${fb})}{2} = ${ans.tex()}.$$`);
+  }
+  if (v === 'semi') {
+    const r = ri(1, 6), half = Math.random() < 0.5, ans = half ? fr(r * r, 2) : fr(r * r, 4);
+    return NUM(T`Evaluate $$\int_{${half ? -r : 0}}^{${r}}\sqrt{${r * r}-x^2}\,dx$$` + PI_NOTE, ans,
+      T`$y=\sqrt{${r * r}-x^2}$ is the top half of the circle $x^2+y^2=${r * r}$.`,
+      T`The region is a ${half ? 'semicircle' : 'quarter circle'} of radius $${r}$, with area $\tfrac{1}{${half ? 2 : 4}}\pi(${r})^2 = ${piTex(ans)}$.`, true);
+  }
+  if (v === 'odd') {
+    const a = ri(1, 4), p = rnz(-4, 4), q = rnz(-5, 5), c = ri(-5, 5);
+    return NUM(T`Evaluate $$\int_{-${a}}^{${a}}\left(${P([p, 0, q, c])}\right)dx$$`, 2 * a * c,
+      'Split into odd and even parts. What happens to the odd part over a symmetric interval?',
+      T`$${P([p, 0, q, 0])}$ is odd, so it integrates to $0$ over $[-${a},${a}]$. The constant gives $${c}\times${2 * a} = ${2 * a * c}$.`);
+  }
+  const p = ri(0, 2), q = p + ri(1, 3), r = q + ri(1, 3), A = rnz(-6, 8), B = rnz(-6, 8), kind = pick(['sum', 'rev', 'lin']);
+  const given = T`Given $\displaystyle\int_{${p}}^{${q}} f(x)\,dx = ${A}$ and $\displaystyle\int_{${q}}^{${r}} f(x)\,dx = ${B}$, evaluate `;
+  if (kind === 'sum') return NUM(given + T`$\displaystyle\int_{${p}}^{${r}} f(x)\,dx$.`, A + B, 'The intervals join end to end.', T`Adjacent intervals add: $${A} + (${B}) = ${A + B}$.`);
+  if (kind === 'rev') return NUM(given + T`$\displaystyle\int_{${r}}^{${q}} f(x)\,dx$.`, -B, 'Look at the order of the limits.', T`Swapping the limits changes the sign: $-(${B}) = ${-B}$.`);
+  const k = ri(2, 5), m = ri(1, 4);
+  return NUM(given + T`$\displaystyle\int_{${p}}^{${q}} \big(${k}f(x) + ${m}\big)\,dx$.`, k * A + m * (q - p), 'Split the integral and pull out constants. What is the integral of a constant?',
+    T`$$${k}\int_{${p}}^{${q}} f\,dx + ${m}(${q}-${p}) = ${k}(${A}) + ${m * (q - p)} = ${k * A + m * (q - p)}.$$`);
+}});
+
+LEVELS.push({ world: 'i', id: 'i3', title: 'Antiderivatives', short: 'Reversing differentiation.',
+learn: T`<p>$F$ is an <em>antiderivative</em> of $f$ if $F'=f$. Antiderivatives differ by a constant, so we write $\int f(x)\,dx=F(x)+C$.</p>
+$$\int x^n\,dx=\frac{x^{n+1}}{n+1}+C\ \ (n\neq-1),\qquad \int\frac1x\,dx=\ln|x|+C,$$ $$\int e^{kx}\,dx=\frac1k e^{kx}+C,\qquad \int\cos kx\,dx=\frac1k\sin kx+C.$$
+<p>Check any answer by differentiating it. A condition such as $F(0)=5$ pins down $C$.</p>`,
+gen(d) {
+  if (d === 0 || (d === 1 && Math.random() < 0.3)) {
+    const n = pick([2, 3]), cs = [rnz(-4, 4), ...Array.from({ length: n }, () => ri(-6, 6))];
+    return MC(T`Find $$\int\left(${P(cs)}\right)dx$$`, P(pAnti(cs)) + ' + C', [
+      P(pDer(cs)) + ' + C',
+      polyT(cs.map((c, i) => [c, n - i + 1])) + ' + C',
+      polyT(cs.map((c, i) => [c * (n - i + 1), n - i + 1])) + ' + C',
+    ], 'Raise each power by one, then divide by the new power.',
+      T`Term by term, $x^n\to\dfrac{x^{n+1}}{n+1}$: $$\int\left(${P(cs)}\right)dx = ${P(pAnti(cs))} + C.$$ Differentiate to check.`);
+  }
+  if (d === 1) {
+    const k = ri(2, 6), v = pick(['exp', 'cos', 'sin', 'recip', 'sqrt']);
+    if (v === 'exp') return MC(T`Find $\displaystyle\int e^{${k}x}\,dx$.`, T`\frac{1}{${k}}e^{${k}x} + C`, [T`${k}e^{${k}x} + C`, T`e^{${k}x} + C`, T`\frac{e^{${k}x+1}}{${k}x+1} + C`],
+      'Guess e to the same power, then fix the constant by differentiating.', T`$\dfrac{d}{dx}e^{${k}x} = ${k}e^{${k}x}$, so divide by $${k}$: $\dfrac{1}{${k}}e^{${k}x} + C$.`);
+    if (v === 'cos') return MC(T`Find $\displaystyle\int \cos(${k}x)\,dx$.`, T`\frac{1}{${k}}\sin(${k}x) + C`, [T`${k}\sin(${k}x) + C`, T`-\frac{1}{${k}}\sin(${k}x) + C`, T`\frac{1}{${k}}\cos(${k}x) + C`],
+      'Which function differentiates to cosine?', T`$\dfrac{d}{dx}\sin(${k}x) = ${k}\cos(${k}x)$, so divide by $${k}$.`);
+    if (v === 'sin') return MC(T`Find $\displaystyle\int \sin(${k}x)\,dx$.`, T`-\frac{1}{${k}}\cos(${k}x) + C`, [T`\frac{1}{${k}}\cos(${k}x) + C`, T`-${k}\cos(${k}x) + C`, T`\frac{1}{${k}}\sin(${k}x) + C`],
+      'Cosine differentiates to minus sine.', T`$\dfrac{d}{dx}\cos(${k}x) = -${k}\sin(${k}x)$, so the antiderivative is $-\dfrac{1}{${k}}\cos(${k}x) + C$.`);
+    if (v === 'recip') { const a = ri(2, 9); return MC(T`Find $\displaystyle\int \frac{${a}}{x}\,dx$.`, T`${a}\ln|x| + C`, [T`-\frac{${a}}{x^2} + C`, T`\frac{${a}}{2}x^2 + C`, T`${a}e^{x} + C`],
+      T`The power rule fails for $x^{-1}$.`, T`$\displaystyle\int\frac1x\,dx = \ln|x| + C$, so the answer is $${a}\ln|x| + C$.`); }
+    return MC(T`Find $\displaystyle\int \sqrt{x}\,dx$.`, T`\frac{2}{3}x^{3/2} + C`, [T`\frac{1}{2\sqrt{x}} + C`, T`\frac{3}{2}x^{3/2} + C`, T`x^{3/2} + C`],
+      T`Write $\sqrt x = x^{1/2}$.`, T`$\dfrac{x^{3/2}}{3/2} = \dfrac23 x^{3/2}$, plus $C$.`);
+  }
+  const cs = [rnz(-3, 3), ri(-4, 4), ri(-5, 5)], F0 = ri(-5, 5), p = ri(-2, 3), F = pAnti(cs), ans = pEval(F, p).add(F0);
+  return NUM(T`Find $F(${p})$ if $F'(x)=${P(cs)}$ and $F(0)=${F0}$.`, ans,
+    'Antidifferentiate, then use F(0) to find the constant C.',
+    T`$F(x)=${P(F)} + C$. Since $F(0)=C=${F0}$, $$F(${p}) = ${pEval(F, p).tex()} ${F0 < 0 ? '-' : '+'} ${Math.abs(F0)} = ${ans.tex()}.$$`);
+}});
+
+
+/* Standard integral forms for the main function types. */
+LEVELS.push({ world: 'i', id: 'i15', title: 'Standard integral forms', short: 'Match each function type to its antiderivative.',
+learn: T`<p>Learn the standard forms: powers, \(1/x\), exponentials, sine and cosine, \(\sec^2 x\), \(\arctan\) and \(\arcsin\). The form of the function tells you the form of the antiderivative.</p>`,
+gen(d){
+  const k=ri(2,6), n=ri(2,6);
+  const cases=[
+   {q:T`x^{${n}}`, ans:T`\frac{x^{${n+1}}}{${n+1}}+C`, wrong:[T`${n}x^{${n-1}}+C`,T`\frac{x^{${n+1}}}{${n}}+C`,T`x^{${n+1}}+C`]},
+   {q:T`\frac{1}{x}`, ans:T`\ln|x|+C`, wrong:[T`-\frac{1}{x^2}+C`,T`\ln x^2+C`,T`\frac{x^2}{2}+C`]},
+   {q:T`e^{${k}x}`, ans:T`\frac{1}{${k}}e^{${k}x}+C`, wrong:[T`${k}e^{${k}x}+C`,T`e^{${k}x}+C`,T`\frac{1}{${k}}e^{x}+C`]},
+   {q:T`\sin(${k}x)`, ans:T`-\frac{1}{${k}}\cos(${k}x)+C`, wrong:[T`\frac{1}{${k}}\cos(${k}x)+C`,T`-${k}\cos(${k}x)+C`,T`\cos(${k}x)+C`]},
+   {q:T`\cos(${k}x)`, ans:T`\frac{1}{${k}}\sin(${k}x)+C`, wrong:[T`-\frac{1}{${k}}\sin(${k}x)+C`,T`${k}\sin(${k}x)+C`,T`\sin(${k}x)+C`]},
+   {q:T`\sec^2 x`, ans:T`\tan x+C`, wrong:[T`\sec x+C`,T`-\tan x+C`,T`\ln|\sec x|+C`]},
+   {q:T`\frac{1}{1+x^2}`, ans:T`\arctan x+C`, wrong:[T`\arcsin x+C`,T`\ln(1+x^2)+C`,T`\frac{1}{2}\arctan x+C`]},
+   {q:T`\frac{1}{\sqrt{1-x^2}}`, ans:T`\arcsin x+C`, wrong:[T`\arccos x+C`,T`\arctan x+C`,T`-\arcsin x+C`]}
+  ];
+  const c=pick(cases);
+  return MC(T`Find $\displaystyle\int ${c.q}\,dx$.`,c.ans,c.wrong,'Recall the standard antiderivative for this function type.',T`Match the function to its standard form.`);
+}});
+
+LEVELS.push({ world: 'i', id: 'i4', title: 'Fundamental Theorem, part 1', short: 'Differentiating an accumulation function.',
+learn: T`<p>If $f$ is continuous and $g(x)=\displaystyle\int_a^x f(t)\,dt$, then $$g'(x)=f(x).$$ Accumulating $f$ and then differentiating gives back $f$. With a variable upper limit $u(x)$ the chain rule adds a factor: $$\frac{d}{dx}\int_a^{u(x)}f(t)\,dt=f\big(u(x)\big)\,u'(x).$$</p>
+<p>If the variable is the <em>lower</em> limit, flip the integral first, which introduces a minus sign.</p>`,
+gen(d) {
+  if (d === 0) {
+    const c = ri(0, 3), k = ri(2, 9), p = ri(-2, 3);
+    if (Math.random() < 0.2) return NUM(T`Let $\displaystyle g(x)=\int_{${c}}^{x}(t^3 - ${k}t)\,dt$. Find $g(${c})$.`, 0,
+      'What is the integral over an interval of zero width?', T`$g(${c})=\displaystyle\int_{${c}}^{${c}}(\ldots)\,dt=0$: there is no width to accumulate over.`);
+    return NUM(T`Let $\displaystyle g(x)=\int_{${c}}^{x}(t^3 - ${k}t)\,dt$. Find $g'(${p})$.`, p ** 3 - k * p,
+      'By the Fundamental Theorem, differentiating the accumulation function returns the integrand.',
+      T`$g'(x) = x^3 - ${k}x$, so $g'(${p}) = ${p ** 3 - k * p}$.`);
+  }
+  const v = pick(d === 1 ? ['basic', 'up'] : ['up', 'flip', 'both']);
+  if (v === 'basic') { const c = ri(1, 4), k = ri(1, 9); return MC(T`Find $\dfrac{d}{dx}\displaystyle\int_{${c}}^{x}(t^2+${k})\,dt$.`, T`x^2+${k}`, ['2x', T`x^2-${c * c}`, T`\frac{x^3}{3}+${k}x`],
+    'You do not need to integrate at all.', T`By part 1 of the Fundamental Theorem the derivative is the integrand evaluated at $x$: $x^2+${k}$.`); }
+  if (v === 'up') { const n = pick([2, 3]), lead = n === 2 ? '2x' : '3x^{2}'; return MC(T`Find $\dfrac{d}{dx}\displaystyle\int_{0}^{x^{${n}}}\cos t\,dt$.`, T`${lead}\cos(x^{${n}})`, [T`\cos(x^{${n}})`, T`${lead}\sin(x^{${n}})`, T`\sin(x^{${n}})`],
+    'The upper limit is a function of x, so the chain rule applies.', T`$\cos(x^{${n}})\cdot\dfrac{d}{dx}x^{${n}} = ${lead}\cos(x^{${n}})$.`); }
+  if (v === 'flip') { const c = ri(2, 5); return MC(T`Find $\dfrac{d}{dx}\displaystyle\int_{x}^{${c}}e^{t^2}\,dt$.`, '-e^{x^2}', ['e^{x^2}', T`e^{${c * c}}-e^{x^2}`, '-2xe^{x^2}'],
+    'x is the lower limit. Swap the limits first.', T`$\displaystyle\int_x^{${c}} = -\int_{${c}}^{x}$, so the derivative is $-e^{x^2}$.`); }
+  return MC(T`Find $\dfrac{d}{dx}\displaystyle\int_{x}^{x^2}\frac{1}{t}\,dt$ for $x>0$.`, T`\dfrac{1}{x}`, [T`\ln x`, T`\dfrac{2}{x}`, T`\dfrac{1}{x^2}-\dfrac{1}{x}`],
+    'Both limits vary. Split the integral at a constant, such as 1.',
+    T`$$\frac{1}{x^2}\cdot 2x - \frac{1}{x}\cdot 1 = \frac{2}{x}-\frac{1}{x} = \frac{1}{x}.$$`);
+}});
+
+LEVELS.push({ world: 'i', id: 'i5', title: 'Fundamental Theorem, part 2', short: 'Evaluating definite integrals.',
+learn: T`<p>If $F'=f$ on $[a,b]$, then $$\int_a^b f(x)\,dx=F(b)-F(a)=\Big[F(x)\Big]_a^b.$$ No $+C$ is needed: it cancels.</p>
+<p><b>Example.</b> $\displaystyle\int_1^3 (2x+1)\,dx=\Big[x^2+x\Big]_1^3=12-2=10.$</p>
+<p>Take care with negative lower limits: bracket $F(a)$ before subtracting.</p>`,
+gen(d) {
+  if (d < 2 || Math.random() < 0.4) {
+    const deg = d === 0 ? pick([1, 2]) : 3, cs = [rnz(-3, 3) * (deg === 3 ? 4 : deg + 1), ...Array.from({ length: deg }, () => ri(-4, 4))];
+    const a = ri(-2, 1), b = a + ri(1, 3), F = pAnti(cs), Fb = pEval(F, b), Fa = pEval(F, a), ans = Fb.sub(Fa);
+    return NUM(T`Evaluate $$\int_{${a}}^{${b}}\left(${P(cs)}\right)dx$$`, ans, 'Find an antiderivative F, then compute F(b) minus F(a).',
+      T`$F(x)=${P(F)}$. $$F(${b})-F(${a}) = ${Fb.tex()} - \left(${Fa.tex()}\right) = ${ans.tex()}.$$`);
+  }
+  const v = pick(['lnx', 'sin', 'exp', 'inv2']);
+  if (v === 'lnx') { const k = ri(2, 6); return NUM(T`Evaluate $\displaystyle\int_{1}^{e^{${k}}}\frac{1}{x}\,dx$.`, k, 'The antiderivative of 1/x is ln|x|.', T`$\big[\ln x\big]_1^{e^{${k}}} = ${k} - 0 = ${k}$.`); }
+  if (v === 'sin') { const m = ri(1, 6), k = ri(1, 4), up = k === 1 ? T`\pi` : T`\frac{\pi}{${k}}`, ans = fr(2 * m, k);
+    return NUM(T`Evaluate $$\int_{0}^{${up}}${co(m, T`\sin(${co(k, 'x')})`)}\,dx$$`, ans, T`An antiderivative of $\sin(kx)$ is $-\tfrac1k\cos(kx)$.`,
+      T`$$\left[-${kOverM(m, k)}\cos(${co(k, 'x')})\right]_0^{${up}} = -${kOverM(m, k)}(\cos\pi - \cos 0) = ${ans.tex()}.$$`); }
+  if (v === 'exp') { const k = ri(2, 9); return NUM(T`Evaluate $\displaystyle\int_{0}^{\ln ${k}} e^{x}\,dx$.`, k - 1, T`$e^x$ is its own antiderivative, and $e^{\ln k}=k$.`, T`$\big[e^x\big]_0^{\ln ${k}} = ${k} - 1 = ${k - 1}$.`); }
+  const b = ri(2, 9), ans = fr(b - 1, b);
+  return NUM(T`Evaluate $\displaystyle\int_{1}^{${b}}\frac{1}{x^2}\,dx$.`, ans, T`Write $\dfrac{1}{x^2}=x^{-2}$.`, T`$$\left[-\frac1x\right]_1^{${b}} = -\frac{1}{${b}} + 1 = ${ans.tex()}.$$`);
+}});
+
+LEVELS.push({ world: 'i', id: 'i6', title: 'Substitution', short: 'Undoing the chain rule.',
+learn: T`<p>Substitution reverses the chain rule. Look for a function $u=g(x)$ whose derivative also appears: $$\int f\big(g(x)\big)\,g'(x)\,dx=\int f(u)\,du.$$</p>
+<p><b>Example.</b> For $\int 2x(x^2+1)^3\,dx$ let $u=x^2+1$, so $du=2x\,dx$: $$\int u^3\,du=\frac{u^4}{4}+C=\frac{(x^2+1)^4}{4}+C.$$</p>
+<p>For definite integrals, change the limits to $u$-values as well. A special case worth knowing: $\displaystyle\int\frac{g'(x)}{g(x)}\,dx=\ln|g(x)|+C$.</p>`,
+gen(d) {
+  const v = pick(d === 0 ? ['A0', 'Dpoly'] : d === 1 ? ['A1', 'B', 'Dpoly', 'Dtrig'] : ['B', 'C', 'Dtrig', 'A1']);
+  const k = ri(1, 9), n = ri(2, 6), base = T`(x^2+${k})`;
+  if (v === 'A0') return MC(T`Find $\displaystyle\int 2x${base}^{${n}}\,dx$.`, T`\frac{${base}^{${n + 1}}}{${n + 1}} + C`,
+    [T`${base}^{${n + 1}} + C`, T`\frac{x^2${base}^{${n + 1}}}{${n + 1}} + C`, T`${2 * n}x${base}^{${n - 1}} + C`],
+    T`Let $u=x^2+${k}$. What is $du$?`, T`$u=x^2+${k}$, $du=2x\,dx$, so $\displaystyle\int u^{${n}}\,du = \frac{u^{${n + 1}}}{${n + 1}} + C$.`);
+  if (v === 'A1') return MC(T`Find $\displaystyle\int x${base}^{${n}}\,dx$.`, T`\frac{${base}^{${n + 1}}}{${2 * (n + 1)}} + C`,
+    [T`\frac{${base}^{${n + 1}}}{${n + 1}} + C`, T`\frac{x^2${base}^{${n + 1}}}{${2 * (n + 1)}} + C`, T`${base}^{${n + 1}} + C`],
+    T`Let $u=x^2+${k}$, so $x\,dx=\tfrac12\,du$.`, T`$$\int x${base}^{${n}}\,dx = \frac12\int u^{${n}}\,du = \frac{u^{${n + 1}}}{${2 * (n + 1)}} + C.$$`);
+  if (v === 'B') { const b = ri(-6, 6), c = ri(1, 9), q = P([1, b, c]), dq = P([2, b]);
+    return MC(T`Find $$\int\frac{${dq}}{${q}}\,dx$$`, T`\ln\left|${q}\right| + C`, [T`\frac{1}{${q}} + C`, T`\ln\left|${dq}\right| + C`, T`(${dq})\ln\left|${q}\right| + C`],
+      'Compare the numerator with the derivative of the denominator.', T`The numerator is the derivative of the denominator, so with $u=${q}$ the integral is $\displaystyle\int\frac{du}{u} = \ln|u| + C$.`); }
+  if (v === 'C') { const kk = ri(2, 5); return MC(T`Find $\displaystyle\int\cos(${kk}x)\,e^{\sin(${kk}x)}\,dx$.`, T`\frac{1}{${kk}}e^{\sin(${kk}x)} + C`,
+    [T`e^{\sin(${kk}x)} + C`, T`${kk}e^{\sin(${kk}x)} + C`, T`\frac{1}{${kk}}e^{\cos(${kk}x)} + C`],
+    T`Let $u=\sin(${kk}x)$.`, T`$du = ${kk}\cos(${kk}x)\,dx$, so the integral is $\dfrac{1}{${kk}}\displaystyle\int e^u\,du = \dfrac{1}{${kk}}e^{\sin(${kk}x)} + C$.`); }
+  if (v === 'Dpoly') { const m = ri(2, 4), ans = fr(2 ** (m + 1) - 1, m + 1);
+    return NUM(T`Evaluate $\displaystyle\int_0^1 2x(x^2+1)^{${m}}\,dx$.`, ans, 'Let u = x² + 1 and change the limits to u-values.',
+      T`$u=x^2+1$: $x=0\to u=1$, $x=1\to u=2$. $$\int_1^2 u^{${m}}\,du = \left[\frac{u^{${m + 1}}}{${m + 1}}\right]_1^2 = \frac{${2 ** (m + 1)}-1}{${m + 1}} = ${ans.tex()}.$$`); }
+  const m = ri(2, 6);
+  return NUM(T`Evaluate $\displaystyle\int_0^{\pi/2}\cos x\,\sin^{${m}}x\,dx$.`, fr(1, m + 1), 'Let u = sin x.',
+    T`$u=\sin x$, $du=\cos x\,dx$, limits $0\to1$: $$\int_0^1 u^{${m}}\,du = \frac{1}{${m + 1}}.$$`);
+}});
+
+LEVELS.push({ world: 'i', id: 'i7', title: 'Integration by parts', short: 'Undoing the product rule.',
+learn: T`<p>Integration by parts reverses the product rule: $$\int u\,dv=uv-\int v\,du.$$</p>
+<p>Choose $u$ to be the factor that gets simpler when differentiated. The LIATE order (logs, inverse trig, algebraic, trig, exponential) suggests which factor to take as $u$.</p>
+<p><b>Example.</b> $\int xe^x\,dx$: take $u=x$, $dv=e^x\,dx$, so $du=dx$ and $v=e^x$: $$\int xe^x\,dx=xe^x-\int e^x\,dx=xe^x-e^x+C.$$</p>`,
+gen(d) {
+  const v = pick(d === 0 ? ['xe1', 'xcos', 'xsin', 'lnx', 'liate'] : d === 1 ? ['xe', 'defsin', 'defcos', 'lnx', 'liate'] : ['xlnx', 'xe', 'defsin', 'defcos']);
+  if (v === 'xe1' || v === 'xe') {
+    const k = v === 'xe1' ? 1 : ri(2, 3);
+    if (k === 1) return MC(T`Find $\displaystyle\int xe^{x}\,dx$.`, 'xe^{x} - e^{x} + C', ['xe^{x} + e^{x} + C', T`\frac{x^2}{2}e^{x} + C`, 'xe^{x} + C'],
+      'Take u = x.', T`$u=x$, $dv=e^x\,dx$: $xe^x-\displaystyle\int e^x\,dx = xe^x - e^x + C$.`);
+    return MC(T`Find $\displaystyle\int xe^{${k}x}\,dx$.`, T`\frac{x}{${k}}e^{${k}x} - \frac{1}{${k * k}}e^{${k}x} + C`,
+      [T`\frac{x}{${k}}e^{${k}x} + \frac{1}{${k * k}}e^{${k}x} + C`, T`\frac{x^2}{2}e^{${k}x} + C`, T`xe^{${k}x} - e^{${k}x} + C`],
+      T`Take $u=x$ and $dv=e^{${k}x}\,dx$, so $v=\tfrac{1}{${k}}e^{${k}x}$.`,
+      T`$$\int xe^{${k}x}\,dx = \frac{x}{${k}}e^{${k}x} - \frac{1}{${k}}\int e^{${k}x}\,dx = \frac{x}{${k}}e^{${k}x} - \frac{1}{${k * k}}e^{${k}x} + C.$$`);
+  }
+  if (v === 'xcos') return MC(T`Find $\displaystyle\int x\cos x\,dx$.`, T`x\sin x + \cos x + C`, [T`x\sin x - \cos x + C`, T`-x\sin x + \cos x + C`, T`\frac{x^2}{2}\sin x + C`],
+    'Take u = x.', T`$u=x$, $v=\sin x$: $x\sin x - \displaystyle\int\sin x\,dx = x\sin x + \cos x + C$.`);
+  if (v === 'xsin') return MC(T`Find $\displaystyle\int x\sin x\,dx$.`, T`-x\cos x + \sin x + C`, [T`x\cos x + \sin x + C`, T`-x\cos x - \sin x + C`, T`\frac{x^2}{2}\cos x + C`],
+    'Take u = x.', T`$u=x$, $v=-\cos x$: $-x\cos x + \displaystyle\int\cos x\,dx = -x\cos x + \sin x + C$.`);
+  if (v === 'lnx') return MC(T`Find $\displaystyle\int \ln x\,dx$.`, T`x\ln x - x + C`, [T`\frac{1}{x} + C`, T`x\ln x + C`, T`\frac{(\ln x)^2}{2} + C`],
+    T`Take $u=\ln x$ and $dv=dx$.`, T`$u=\ln x$, $v=x$: $x\ln x - \displaystyle\int x\cdot\frac1x\,dx = x\ln x - x + C$.`);
+  if (v === 'xlnx') return MC(T`Find $\displaystyle\int x\ln x\,dx$.`, T`\frac{x^2}{2}\ln x - \frac{x^2}{4} + C`, [T`\frac{x^2}{2}\ln x + \frac{x^2}{4} + C`, T`\frac{x^2}{2}\ln x - \frac{x}{2} + C`, T`x\ln x - x + C`],
+    T`Take $u=\ln x$ and $dv=x\,dx$.`, T`$$\frac{x^2}{2}\ln x - \int\frac{x^2}{2}\cdot\frac1x\,dx = \frac{x^2}{2}\ln x - \frac{x^2}{4} + C.$$`);
+  if (v === 'liate') {
+    const n = ri(2, 4), k = ri(2, 5);
+    if (Math.random() < 0.5) return MC(T`For $\displaystyle\int x^{${n}}e^{${k}x}\,dx$, which choice of $u$ makes integration by parts work?`, T`u = x^{${n}}`,
+      [T`u = e^{${k}x}`, T`u = x^{${n}}e^{${k}x}`, T`u = ${k}x`], 'Which factor becomes simpler each time you differentiate it?',
+      T`Differentiating $x^{${n}}$ lowers the power, and after ${n} rounds it disappears. Differentiating $e^{${k}x}$ never simplifies it.`);
+    return MC(T`For $\displaystyle\int x^{${n}}\ln x\,dx$, which choice of $u$ makes integration by parts work?`, T`u = \ln x`,
+      [T`u = x^{${n}}`, T`u = x^{${n}}\ln x`, 'u = 1'], 'LIATE: logs come first.',
+      T`With $u=\ln x$, $du=\dfrac{dx}{x}$ removes the logarithm, and $dv=x^{${n}}dx$ is easy to integrate.`);
+  }
+  const m = ri(1, 4), up = m === 1 ? T`\pi` : T`${m}\pi`, sgn = m % 2 === 0 ? 1 : -1;
+  if (v === 'defsin') { const ans = fr(-m * sgn);
+    return NUM(T`Evaluate $\displaystyle\int_0^{${up}} x\sin x\,dx$.` + PI_NOTE, ans, T`First find $\displaystyle\int x\sin x\,dx$ by parts with $u=x$.`,
+      T`$\displaystyle\int x\sin x\,dx = -x\cos x + \sin x$. At $${up}$: $-(${up})\cos(${up}) + 0 = ${piTex(ans)}$. At $0$: $0$.`, true); }
+  const ans = sgn - 1;
+  return NUM(T`Evaluate $\displaystyle\int_0^{${up}} x\cos x\,dx$.`, ans, T`First find $\displaystyle\int x\cos x\,dx$ by parts with $u=x$.`,
+    T`$\displaystyle\int x\cos x\,dx = x\sin x + \cos x$. Since $\sin(${up})=0$: $$\Big[x\sin x + \cos x\Big]_0^{${up}} = \cos(${up}) - \cos 0 = ${sgn} - 1 = ${ans}.$$`);
+}});
+/* ===== World 2: Integration, levels 8-14 ===== */
+
+LEVELS.push({ world: 'i', id: 'i8', title: 'Partial fractions', short: 'Splitting rational functions.',
+learn: T`<p>A rational function whose denominator factors into distinct linear factors splits into simpler pieces: $$\frac{px+q}{(x-a)(x-b)}=\frac{A}{x-a}+\frac{B}{x-b}.$$</p>
+<p>Multiply through by $(x-a)(x-b)$ and set $x=a$ to find $A$, then $x=b$ to find $B$ (the cover-up method). Each piece then integrates to a logarithm.</p>
+<p><b>Example.</b> $\dfrac{1}{x^2-1}=\dfrac{1/2}{x-1}-\dfrac{1/2}{x+1}$, so $\displaystyle\int\frac{dx}{x^2-1}=\frac12\ln|x-1|-\frac12\ln|x+1|+C$.</p>`,
+gen(d) {
+  let a, b, p, q;
+  do {
+    a = ri(-4, 4); b = ri(-4, 4); p = d === 0 ? 0 : ri(-3, 3); q = d === 0 ? ri(1, 5) : ri(-5, 5);
+  } while (a === b || p * a + q === 0 || p * b + q === 0);
+  const A = fr(p * a + q, a - b), B = fr(p * b + q, b - a), den = P([1, -(a + b), a * b]), num = P([p, q]);
+  const frac = T`\frac{${num}}{${den}}`;
+  const coverA = T`Multiply by $(${xm(a)})(${xm(b)})$: $${num} = A(${xm(b)}) + B(${xm(a)})$. Put $x=${a}$: $${p * a + q} = A(${a - b})$, so $A = ${A.tex()}$.`;
+  const coverB = T` Put $x=${b}$: $${p * b + q} = B(${b - a})$, so $B = ${B.tex()}$.`;
+  if (d < 2) {
+    const askA = d === 0 || Math.random() < 0.5;
+    return NUM(T`Write $$${frac} = \frac{A}{${xm(a)}} + \frac{B}{${xm(b)}}.$$ Find $${askA ? 'A' : 'B'}$.`, askA ? A : B,
+      T`Factor the denominator, clear fractions, then substitute $x=${askA ? a : b}$.`, coverA + coverB);
+  }
+  const correct = lnT(A, xm(a), true) + lnT(B, xm(b), false) + ' + C';
+  return MC(T`Find $$\int ${frac}\,dx$$`, correct, [
+    lnT(B, xm(a), true) + lnT(A, xm(b), false) + ' + C',
+    lnT(A, xm(a), true) + lnT(B.neg(), xm(b), false) + ' + C',
+    lnT(A, xp(a), true) + lnT(B, xp(b), false) + ' + C',
+    T`\ln\left|${den}\right| + C`,
+  ], T`Factor the denominator as $(${xm(a)})(${xm(b)})$ and find $A$ and $B$.`,
+    coverA + coverB + T` Each piece integrates to a logarithm: $$\int ${frac}\,dx = ${correct}.$$`);
+}});
+
+const TRIG_BANK = {
+  sin2: () => [T`\sin^2 x`, T`\frac{x}{2} - \frac{\sin 2x}{4} + C`, [T`\frac{\sin^3 x}{3} + C`, T`\frac{x}{2} + \frac{\sin 2x}{4} + C`, T`-\frac{\cos^3 x}{3} + C`], 'Use a half-angle identity.', T`$\sin^2x = \dfrac{1-\cos 2x}{2}$, which integrates to $\dfrac{x}{2} - \dfrac{\sin 2x}{4} + C$.`],
+  cos2: () => [T`\cos^2 x`, T`\frac{x}{2} + \frac{\sin 2x}{4} + C`, [T`\frac{\cos^3 x}{3} + C`, T`\frac{x}{2} - \frac{\sin 2x}{4} + C`, T`\frac{\sin^3 x}{3} + C`], 'Use a half-angle identity.', T`$\cos^2x = \dfrac{1+\cos 2x}{2}$, which integrates to $\dfrac{x}{2} + \dfrac{\sin 2x}{4} + C$.`],
+  sincos: () => [T`\sin x\cos x`, T`\frac{1}{2}\sin^2 x + C`, [T`\frac{1}{2}\cos^2 x + C`, T`\sin^2 x + C`, T`-\sin x\cos x + C`], 'Let u = sin x.', T`$u=\sin x$, $du=\cos x\,dx$: $\displaystyle\int u\,du = \frac{u^2}{2} + C$.`],
+  sin3: () => [T`\sin^3 x`, T`-\cos x + \frac{\cos^3 x}{3} + C`, [T`\cos x - \frac{\cos^3 x}{3} + C`, T`\frac{\sin^4 x}{4} + C`, T`-\frac{\cos^4 x}{4} + C`], T`Write $\sin^3 x = (1-\cos^2 x)\sin x$.`, T`With $u=\cos x$, $du=-\sin x\,dx$: $$-\int(1-u^2)\,du = -u + \frac{u^3}{3} + C = -\cos x + \frac{\cos^3 x}{3} + C.$$`],
+  sec2: () => { const k = ri(2, 5); return [T`\sec^2(${k}x)`, T`\frac{1}{${k}}\tan(${k}x) + C`, [T`${k}\tan(${k}x) + C`, T`\frac{\sec^3(${k}x)}{3} + C`, T`\tan(${k}x) + C`], T`Which function has derivative $\sec^2 x$?`, T`$\dfrac{d}{dx}\tan(${k}x) = ${k}\sec^2(${k}x)$, so divide by $${k}$.`]; },
+  tan: () => [T`\tan x`, T`\ln|\sec x| + C`, [T`\sec^2 x + C`, T`\ln|\cos x| + C`, T`\ln|\sin x| + C`], T`Write $\tan x = \dfrac{\sin x}{\cos x}$ and let $u=\cos x$.`, T`$$\int\frac{\sin x}{\cos x}\,dx = -\ln|\cos x| + C = \ln|\sec x| + C.$$`],
+};
+LEVELS.push({ world: 'i', id: 'i9', title: 'Trigonometric integrals', short: 'Powers and products of sine and cosine.',
+learn: T`<p>For even powers of sine and cosine, use the half-angle identities $$\sin^2x=\frac{1-\cos2x}{2},\qquad\cos^2x=\frac{1+\cos2x}{2}.$$</p>
+<p>For an odd power, save one factor and convert the rest with $\sin^2x+\cos^2x=1$, then substitute. For example, $\sin^3x=(1-\cos^2x)\sin x$ with $u=\cos x$.</p>
+<p>Products such as $\sin mx\sin nx$ become sums by the product-to-sum identities. Over a full period they often integrate to zero, the fact that makes Fourier series work.</p>`,
+gen(d) {
+  const v = pick(d === 0 ? ['sincos', 'sec2', 'sin2', 'cos2'] : d === 1 ? ['sq', 'odd', 'sin2', 'cos2', 'tan'] : ['sin3', 'orth', 'odd', 'tan']);
+  if (TRIG_BANK[v]) { const [f, c, w, hint, sol] = TRIG_BANK[v](); return MC(T`Find $\displaystyle\int ${f}\,dx$.`, c, w, hint, sol); }
+  if (v === 'sq') {
+    const m = ri(1, 4), fn = pick(['sin', 'cos']), fnT = fn === 'sin' ? T`\sin` : T`\cos`, up = m === 1 ? T`\pi` : T`${m}\pi`, ans = fr(m, 2);
+    return NUM(T`Evaluate $\displaystyle\int_0^{${up}}${fnT}^2 x\,dx$.` + PI_NOTE, ans, 'Use a half-angle identity.',
+      T`$${fnT}^2 x = \dfrac{1 ${fn === 'sin' ? '-' : '+'} \cos 2x}{2}$. The $\cos 2x$ part integrates to $0$ over whole multiples of $\pi$, leaving $\dfrac12\cdot ${up} = ${piTex(ans)}$.`, true);
+  }
+  if (v === 'odd') {
+    const n = pick([3, 5]), fn = pick(['sin', 'cos']), fnT = fn === 'sin' ? T`\sin` : T`\cos`, ans = n === 3 ? fr(2, 3) : fr(8, 15);
+    const inner = n === 3 ? T`\int_0^1(1-u^2)\,du = 1-\frac13` : T`\int_0^1(1-u^2)^2\,du = 1-\frac23+\frac15`;
+    return NUM(T`Evaluate $\displaystyle\int_0^{\pi/2}${fnT}^{${n}}x\,dx$.`, ans, `Save one factor of ${fn} x and convert the rest.`,
+      T`With $u=${fn === 'cos' ? T`\sin x` : T`\cos x`}$ the integral becomes $$${inner} = ${ans.tex()}.$$`);
+  }
+  let m = ri(1, 5), n = ri(1, 5); if (Math.random() < 0.6) while (n === m) n = ri(1, 5);
+  const ans = m === n ? fr(1, 2) : fr(0);
+  return NUM(T`Evaluate $\displaystyle\int_0^{\pi}\sin(${co(m, 'x')})\sin(${co(n, 'x')})\,dx$.` + T` Give your answer as a multiple of $\pi$ (enter 0 if the integral is zero).`, ans,
+    m === n ? 'The two factors are the same, so this is a sine squared.' : 'Use the product-to-sum identity.',
+    m === n ? T`This is $\displaystyle\int_0^\pi\sin^2(${co(m, 'x')})\,dx = \frac{\pi}{2}$.`
+      : T`$\sin A\sin B = \tfrac12[\cos(A-B) - \cos(A+B)]$. Both $\cos(${Math.abs(m - n) === 1 ? '' : Math.abs(m - n)}x)$ and $\cos(${m + n}x)$ integrate to $0$ over $[0,\pi]$, so the answer is $0$.`, true);
+}});
+
+
+/* Choosing the right form or method for the integrand. */
+LEVELS.push({ world: 'i', id: 'i16', title: 'Choosing the right integral form', short: 'Recognise which form or method fits the integrand.',
+learn: T`<p>Look at the structure: \(f'/f\) gives a logarithm, \(f^n f'\) gives a power, a product with a polynomial and an exponential or logarithm suggests parts, a rational function suggests partial fractions, and powers of sine or cosine suggest an identity.</p>`,
+gen(d){
+  const cases=[
+   {q:T`\frac{2x}{x^2+1}`, ans:T`\text{the }f'/f\text{ form}`, wrong:[T`\text{integration by parts}`,T`\text{partial fractions}`,T`\text{the arctangent form}`]},
+   {q:T`x e^{x^2}`, ans:T`\text{substitution }u=x^2`, wrong:[T`\text{integration by parts}`,T`\text{partial fractions}`,T`\text{a trigonometric identity}`]},
+   {q:T`x\cos(x^2)`, ans:T`\text{substitution }u=x^2`, wrong:[T`\text{integration by parts}`,T`\text{partial fractions}`,T`\text{the arcsine form}`]},
+   {q:T`\frac{1}{x^2+4}`, ans:T`\text{the arctangent form}`, wrong:[T`\text{partial fractions}`,T`\text{substitution }u=x^2`,T`\text{integration by parts}`]},
+   {q:T`\ln x`, ans:T`\text{integration by parts}`, wrong:[T`\text{substitution }u=\ln x`,T`\text{partial fractions}`,T`\text{the power rule}`]},
+   {q:T`\frac{1}{x^2-1}`, ans:T`\text{partial fractions}`, wrong:[T`\text{the arctangent form}`,T`\text{substitution }u=x^2`,T`\text{integration by parts}`]},
+   {q:T`\sin^2 x`, ans:T`\text{a half-angle identity}`, wrong:[T`\text{integration by parts}`,T`\text{partial fractions}`,T`\text{substitution }u=\sin x`]}
+  ];
+  const c=pick(cases);
+  return MC(T`Which form or method is the natural first step for $\displaystyle\int ${c.q}\,dx$?`,c.ans,c.wrong,'Look at the structure of the integrand.',T`Match the integrand to a standard form.`);
+}});
+
+LEVELS.push({ world: 'i', id: 'i10', title: 'Improper integrals', short: 'Infinite intervals and unbounded integrands.',
+learn: T`<p>An integral over an infinite interval, or of a function that blows up, is defined as a limit: $$\int_1^\infty f(x)\,dx=\lim_{b\to\infty}\int_1^b f(x)\,dx.$$ It <em>converges</em> if the limit is finite and <em>diverges</em> otherwise.</p>
+<p>The benchmark: $\displaystyle\int_1^\infty\frac{dx}{x^p}$ converges only for $p>1$, with value $\dfrac1{p-1}$, while $\displaystyle\int_0^1\frac{dx}{x^p}$ converges only for $p<1$, with value $\dfrac1{1-p}$.</p>`,
+gen(d) {
+  const v = pick(d === 0 ? ['A', 'B'] : d === 1 ? ['A', 'B', 'C', 'D'] : ['C', 'D', 'E', 'A']);
+  if (v === 'A') {
+    const { p, tex } = pick([{ p: fr(2), tex: 'x^{2}' }, { p: fr(3), tex: 'x^{3}' }, { p: fr(4), tex: 'x^{4}' }, { p: fr(3, 2), tex: 'x^{3/2}' }, { p: fr(5, 4), tex: 'x^{5/4}' }]);
+    const ans = fr(1).div(p.sub(1));
+    return NUM(T`Evaluate $\displaystyle\int_1^\infty\frac{1}{${tex}}\,dx$.`, ans, T`Integrate from $1$ to $b$, then let $b\to\infty$.`,
+      T`$p=${p.tex()}>1$, so $$\lim_{b\to\infty}\left[\frac{x^{1-p}}{1-p}\right]_1^b = \frac{1}{p-1} = ${ans.tex()}.$$`);
+  }
+  if (v === 'B') {
+    const k = ri(1, 6), m = ri(1, 5), ans = fr(m, k);
+    return NUM(T`Evaluate $\displaystyle\int_0^\infty ${co(m, T`e^{-${co(k, 'x')}}`)}\,dx$.`, ans, T`An antiderivative of $e^{-kx}$ is $-\tfrac1k e^{-kx}$.`,
+      T`$$\lim_{b\to\infty}\left[-${kOverM(m, k)}e^{-${co(k, 'x')}}\right]_0^b = 0 + ${kOverM(m, k)} = ${ans.tex()}.$$`);
+  }
+  if (v === 'C') {
+    const { p, tex } = pick([{ p: fr(1, 2), tex: T`\sqrt{x}` }, { p: fr(1, 3), tex: T`\sqrt[3]{x}` }, { p: fr(2, 3), tex: T`\sqrt[3]{x^2}` }]);
+    const ans = fr(1).div(fr(1).sub(p));
+    return NUM(T`Evaluate $\displaystyle\int_0^1\frac{1}{${tex}}\,dx$.`, ans, T`The integrand blows up at $0$. Integrate from $a$ to $1$ and let $a\to0^+$.`,
+      T`Here $p=${p.tex()}<1$, so $$\lim_{a\to0^+}\left[\frac{x^{1-p}}{1-p}\right]_a^1 = \frac{1}{1-p} = ${ans.tex()}.$$`);
+  }
+  if (v === 'D') {
+    if (Math.random() < 0.5) return MC('Which of these improper integrals converges?', T`\int_1^\infty \frac{1}{x^{2}}\,dx`,
+      [T`\int_1^\infty \frac{1}{x}\,dx`, T`\int_1^\infty \frac{1}{\sqrt{x}}\,dx`, T`\int_0^1 \frac{1}{x^{2}}\,dx`],
+      'On an infinite interval you need p greater than 1. Near 0 you need p less than 1.',
+      T`$\displaystyle\int_1^\infty x^{-p}\,dx$ converges only for $p>1$, so $p=2$ works and $p=1$, $p=\tfrac12$ do not. $\displaystyle\int_0^1 x^{-2}\,dx$ diverges because near $0$ convergence needs $p<1$.`);
+    return MC('Which of these improper integrals converges?', T`\int_0^1 \frac{1}{\sqrt{x}}\,dx`,
+      [T`\int_0^1 \frac{1}{x}\,dx`, T`\int_0^1 \frac{1}{x^{2}}\,dx`, T`\int_1^\infty \frac{1}{\sqrt{x}}\,dx`],
+      'Near 0 you need p less than 1. On an infinite interval you need p greater than 1.',
+      T`$\displaystyle\int_0^1 x^{-1/2}\,dx = 2$ converges since $\tfrac12<1$. The others diverge: $p=1$ and $p=2$ fail near $0$, and $p=\tfrac12$ fails at infinity.`);
+  }
+  const half = Math.random() < 0.5, tex = half ? T`\sqrt{x}` : 'x';
+  return MC(T`Evaluate $\displaystyle\int_1^\infty\frac{1}{${tex}}\,dx$.`, T`\text{diverges}`, half ? ['-2', '2', '0'] : ['1', '0', T`\frac12`],
+    'Check whether p is greater than 1 before using any formula.',
+    half ? T`$\displaystyle\int_1^b x^{-1/2}\,dx = 2\sqrt b - 2\to\infty$. The formula $\tfrac{1}{p-1}=-2$ only applies when $p>1$.`
+      : T`$\displaystyle\int_1^b\frac{dx}{x} = \ln b\to\infty$, so the integral diverges.`);
+}});
+
+LEVELS.push({ world: 'i', id: 'i11', title: 'Area between curves', short: 'Top minus bottom.',
+learn: T`<p>The area between $y=f(x)$ on top and $y=g(x)$ below, for $a\le x\le b$, is $$A=\int_a^b\big(f(x)-g(x)\big)\,dx.$$</p>
+<p>Find the limits by solving $f(x)=g(x)$, and sketch first to see which curve is on top. Area is always positive, so a negative answer means top and bottom are reversed.</p>
+<p><b>Example.</b> $y=x$ and $y=x^2$ meet at $x=0$ and $x=1$, with $y=x$ on top: $A=\displaystyle\int_0^1(x-x^2)\,dx=\frac16$.</p>`,
+gen(d) {
+  const v = pick(d === 0 ? ['A', 'E'] : d === 1 ? ['A', 'B', 'C', 'E', 'G'] : ['C', 'F', 'B', 'G']);
+  if (v === 'G') { const k = ri(1, 4), ans = fr(k ** 4, 4);
+    return NUM(T`Find the area enclosed by $y=x^3$ and $y=${co(k * k, 'x')}$ in the first quadrant.`, ans, 'Solve for the meeting points with x at least 0, then decide which curve is on top.',
+      T`$x^3=${co(k * k, 'x')}$ at $x=0$ and $x=${k}$, with the line on top. $$\int_0^{${k}}\left(${co(k * k, 'x')}-x^3\right)dx = \frac{${k ** 4}}{2}-\frac{${k ** 4}}{4} = ${ans.tex()}.$$`); }
+  if (v === 'A') { const k = ri(1, 8), ans = fr(k ** 3, 6);
+    return NUM(T`Find the area enclosed by $y=x^2$ and $y=${co(k, 'x')}$.`, ans, 'Find where the curves meet, and decide which is on top.',
+      T`They meet where $x^2=${co(k, 'x')}$, at $x=0$ and $x=${k}$, with the line on top. $$\int_0^{${k}}\left(${co(k, 'x')}-x^2\right)dx = \left[${kOverM(k, 2)}x^2-\frac{x^3}{3}\right]_0^{${k}} = ${ans.tex()}.$$`); }
+  if (v === 'B') { const c = ri(1, 6), ans = fr(4 * c ** 3, 3);
+    return NUM(T`Find the area enclosed by $y=x^2$ and $y=${c * c}$.`, ans, 'The horizontal line is on top.',
+      T`They meet at $x=\pm${c}$. $$\int_{-${c}}^{${c}}\left(${c * c}-x^2\right)dx = \left[${co(c * c, 'x')}-\frac{x^3}{3}\right]_{-${c}}^{${c}} = ${ans.tex()}.$$`); }
+  if (v === 'C') { const k = ri(1, 4), line = k === 1 ? 'x' : T`\dfrac{x}{${k}}`, ans = fr(k ** 3, 6);
+    return NUM(T`Find the area enclosed by $y=\sqrt{x}$ and $y=${line}$.`, ans, T`Solve $\sqrt x = ${line}$. Which curve is on top between the meeting points?`,
+      T`They meet at $x=0$ and $x=${k * k}$, with $\sqrt x$ on top. $$\int_0^{${k * k}}\left(\sqrt{x}-${line}\right)dx = \frac23(${k})^3 - \frac{(${k * k})^2}{${2 * k}} = ${ans.tex()}.$$`); }
+  if (v === 'E') { const n = ri(2, 5), ans = fr(n - 1, 2 * (n + 1));
+    return NUM(T`Find the area enclosed by $y=x$ and $y=x^{${n}}$ for $0\le x\le 1$.`, ans, 'On (0, 1), which is bigger: x or a higher power of x?',
+      T`On $[0,1]$, $x\ge x^{${n}}$. $$\int_0^1\left(x-x^{${n}}\right)dx = \frac12-\frac{1}{${n + 1}} = ${ans.tex()}.$$`); }
+  const k = ri(1, 3), ans = fr(k ** 3, 3);
+  return NUM(T`A sandbar off Negril is modelled as the region between $y=x^2$ and $y=${2 * k}x-x^2$. Find its area in square units.`, ans, 'Set the curves equal to find the limits.',
+    T`$x^2=${2 * k}x-x^2$ gives $x=0$ and $x=${k}$. $$\int_0^{${k}}\left(${2 * k}x-2x^2\right)dx = ${k ** 3} - \frac{${2 * k ** 3}}{3} = ${ans.tex()}.$$`);
+}});
+
+LEVELS.push({ world: 'i', id: 'i12', title: 'Volumes of revolution', short: 'Disks, washers and shells.',
+learn: T`<p>Rotating a region about the $x$-axis. <b>Disks:</b> $V=\pi\displaystyle\int_a^b f(x)^2\,dx$. <b>Washers</b>, with a hole in the middle: $V=\pi\displaystyle\int_a^b\big(R^2-r^2\big)\,dx$, outer radius $R$ and inner radius $r$.</p>
+<p>Rotating about the $y$-axis, <b>shells</b> are often easier: $V=2\pi\displaystyle\int_a^b x\,f(x)\,dx$.</p>
+<p><b>Example.</b> A conical buoy made by rotating $y=\tfrac x2$, $0\le x\le 2$, about the $x$-axis has $V=\pi\displaystyle\int_0^2\frac{x^2}{4}\,dx=\frac{2\pi}{3}$.</p>`,
+gen(d) {
+  const v = pick(d === 0 ? ['A', 'B'] : d === 1 ? ['A', 'B', 'C', 'D'] : ['E', 'F', 'D', 'C']);
+  let q, ans, hint, sol;
+  if (v === 'A') { const a = ri(1, 9); ans = fr(a * a, 2); q = T`The region under $y=\sqrt{x}$ for $0\le x\le ${a}$ is rotated about the $x$-axis. Find the volume.`;
+    hint = 'Disk method: square the radius.'; sol = T`$V=\pi\displaystyle\int_0^{${a}} x\,dx = \pi\cdot\frac{${a * a}}{2} = ${piTex(ans)}$.`; }
+  else if (v === 'B') { const m = ri(1, 4), h = ri(1, 5); ans = fr(m * m * h ** 3, 3);
+    q = T`A conical navigation buoy is modelled by rotating $y=${co(m, 'x')}$, $0\le x\le ${h}$, about the $x$-axis. Find its volume.`;
+    hint = 'Disk method with radius y.'; sol = T`$V=\pi\displaystyle\int_0^{${h}} ${co(m * m, 'x^2')}\,dx = \pi\cdot\frac{${m * m}\cdot${h ** 3}}{3} = ${piTex(ans)}$.`; }
+  else if (v === 'C') { const a = ri(1, 2); ans = fr(a ** 5, 5); q = T`The region under $y=x^2$ for $0\le x\le ${a}$ is rotated about the $x$-axis. Find the volume.`;
+    hint = T`The radius is $x^2$, so you integrate $x^4$.`; sol = T`$V=\pi\displaystyle\int_0^{${a}} x^4\,dx = \frac{${a ** 5}\pi}{5}$.`; }
+  else if (v === 'D') { const r = ri(1, 6); ans = fr(4 * r ** 3, 3);
+    q = T`A glass fishing float of radius ${r} cm is modelled by rotating $y=\sqrt{${r * r}-x^2}$ about the $x$-axis. Use a definite integral to find its volume in cm³.`;
+    hint = T`Integrate $\pi(${r * r}-x^2)$ from $-${r}$ to $${r}$.`; sol = T`$$V=\pi\int_{-${r}}^{${r}}(${r * r}-x^2)\,dx = \pi\left(${2 * r ** 3}-\frac{${2 * r ** 3}}{3}\right) = ${piTex(ans)},$$ which matches $\tfrac43\pi r^3$.`; }
+  else if (v === 'E') { const k = ri(1, 2); ans = fr(2 * k ** 5, 15);
+    q = T`The region between $y=${co(k, 'x')}$ and $y=x^2$ is rotated about the $x$-axis. Find the volume.`;
+    hint = 'Washer method. Which curve gives the outer radius?';
+    sol = T`They meet at $x=0$ and $x=${k}$; the line is outside. $$V=\pi\int_0^{${k}}\left(${co(k * k, 'x^2')}-x^4\right)dx = \pi\left(\frac{${k ** 5}}{3}-\frac{${k ** 5}}{5}\right) = ${piTex(ans)}.$$`; }
+  else { const k = ri(1, 3); ans = fr(k ** 4, 6);
+    q = T`The region under $y=${co(k, 'x')}-x^2$ and above the $x$-axis is rotated about the $y$-axis. Find the volume.`;
+    hint = T`Shell method: $V=2\pi\int x\,f(x)\,dx$.`;
+    sol = T`The curve meets the axis at $x=0$ and $x=${k}$. $$V=2\pi\int_0^{${k}} x\left(${co(k, 'x')}-x^2\right)dx = 2\pi\left(\frac{${k ** 4}}{3}-\frac{${k ** 4}}{4}\right) = ${piTex(ans)}.$$`; }
+  return NUM(q + PI_NOTE, ans, hint, sol, true);
+}});
+
+LEVELS.push({ world: 'i', id: 'i13', title: 'Accumulation and average value', short: 'Totals, averages and work from rates.',
+learn: T`<p>Integrating a rate gives the total change: $\displaystyle\int_a^b r(t)\,dt$ is the amount accumulated between $t=a$ and $t=b$. Rainfall rate gives total rainfall, flow rate gives volume, velocity gives displacement.</p>
+<p>The <em>average value</em> of $f$ on $[a,b]$ is $\dfrac{1}{b-a}\displaystyle\int_a^b f(x)\,dx$.</p>
+<p>Work done by a variable force is $W=\displaystyle\int_a^b F(x)\,dx$. For total distance rather than displacement, integrate $|v(t)|$: split the interval where $v$ changes sign.</p>`,
+gen(d) {
+  const v = pick(d === 0 ? ['rain', 'avgsq', 'work'] : d === 1 ? ['rain', 'res', 'avg', 'work'] : ['dist', 'dist', 'res', 'avg']);
+  if (v === 'rain') { const a = ri(2, 10), b = ri(1, 6), Tt = ri(2, 6), ans = fr(a * Tt).add(fr(b * Tt * Tt, 2));
+    return NUM(T`During a storm, rain falls on Portland at a rate of $r(t)=${a}+${co(b, 't')}$ mm per hour for $0\le t\le ${Tt}$. How many millimetres fall in total?`, ans,
+      'Integrate the rate over the time interval.', T`$$\int_0^{${Tt}}\left(${a}+${co(b, 't')}\right)dt = ${a * Tt} + ${fr(b * Tt * Tt, 2).tex()} = ${ans.tex()}\ \text{mm}.$$`); }
+  if (v === 'res') { const p = ri(1, 4), q = ri(2, 9), Tt = ri(2, 6), ans = fr(p * Tt ** 3, 3).add(q * Tt);
+    return NUM(T`Water flows into the Mona Reservoir at $R(t)=${co(p, 't^2')}+${q}$ thousand m³ per hour. How much flows in, in thousand m³, during the first ${Tt} hours?`, ans,
+      'Total inflow is the integral of the flow rate.', T`$$\int_0^{${Tt}}\left(${co(p, 't^2')}+${q}\right)dt = ${fr(p * Tt ** 3, 3).tex()} + ${q * Tt} = ${ans.tex()}.$$`); }
+  if (v === 'avgsq') { const k = ri(1, 4), a = ri(1, 6), ans = fr(k * a * a, 3);
+    return NUM(T`Find the average value of $f(x)=${co(k, 'x^2')}$ on $[0,${a}]$.`, ans, 'Integrate, then divide by the length of the interval.',
+      T`$$\frac{1}{${a}}\int_0^{${a}} ${co(k, 'x^2')}\,dx = \frac{1}{${a}}\cdot\frac{${k * a ** 3}}{3} = ${ans.tex()}.$$`); }
+  if (v === 'avg') { const c = ri(24, 28), k = rnz(-2, 2), h = ri(2, 8), ans = fr(c).add(fr(k * h, 2));
+    return NUM(T`The seawater temperature at Montego Bay, $t$ hours after 6 a.m., is modelled by $\theta(t)=${c}${st(k, 't')}$ °C for $0\le t\le ${h}$. Find the average temperature over that period.`, ans,
+      'Average value: integrate and divide by the length of the interval.',
+      T`$$\frac{1}{${h}}\int_0^{${h}}\left(${c}${st(k, 't')}\right)dt = \frac{1}{${h}}\left(${c * h}${k < 0 ? ' - ' : ' + '}${fr(Math.abs(k) * h * h, 2).tex()}\right) = ${ans.tex()}\ ^\circ\text{C}.$$`); }
+  if (v === 'work') { const k = ri(5, 40) * 10, dd = ri(1, 4), ans = fr(k * dd * dd, 2);
+    return NUM(T`A mooring line at a Kingston dock stretches like a spring: the force needed is $F(x)=${k}x$ newtons at an extension of $x$ metres. How much work, in joules, stretches it from $0$ to ${dd} m?`, ans,
+      'Work is the integral of force over distance.', T`$$W=\int_0^{${dd}} ${k}x\,dx = \frac{${k}\cdot${dd * dd}}{2} = ${ans.tex()}\ \text{J}.$$`); }
+  const c = ri(1, 6), m = pick([2, 3]), end = m * c, total = fr(c * c * (1 + (m - 1) ** 2), 2), disp = fr(c * c * (m * m - 2 * m), 2);
+  const askTotal = Math.random() < 0.6;
+  return NUM(T`A water taxi on Kingston Harbour moves along a straight line with velocity $v(t)=t-${c}$ m/s for $0\le t\le ${end}$. Find the ${askTotal ? 'total distance travelled' : 'net displacement'}, in metres.`, askTotal ? total : disp,
+    askTotal ? T`The velocity changes sign at $t=${c}$. Integrate $|v|$ on each piece.` : 'Displacement is the plain integral of velocity; negative parts subtract.',
+    T`On $[0,${c}]$, $\int v\,dt = -${fr(c * c, 2).tex()}$. On $[${c},${end}]$, $\int v\,dt = ${fr((m - 1) ** 2 * c * c, 2).tex()}$. ` +
+    (askTotal ? T`Total distance adds the sizes: $${total.tex()}$ m.` : T`Displacement adds the signed values: $${disp.tex()}$ m.`));
+}});
+
+LEVELS.push({ world: 'i', id: 'i14', boss: true, win: BOSS_WIN, th: BOSS_THRESH, title: 'Integration review', short: 'Mixed questions from every level.',
+learn: T`<p>This review draws questions from every integration level at the harder settings. To master it, score ${BOSS_THRESH} of your last ${BOSS_WIN}.</p>
+<p>Before you start calculating, decide on the method. Is there an inner function whose derivative is present? A product where one factor simplifies? A rational function to split? Choosing the method is part of mastery.</p>`,
+gen: bossGen('i') });
+
+
+/* ===== World 3: Partial derivatives, rules only ===== */
+LEVELS.push({ world: 'p', id: 'p1', title: 'First partial derivatives', short: 'Differentiate with respect to x or y, holding the other constant.',
+learn: T`<p>For \(f(x,y)\), the partial derivative \(\partial f/\partial x\) treats \(y\) as a constant; \(\partial f/\partial y\) treats \(x\) as a constant.</p><p>Differentiate each term using the ordinary rules, then evaluate.</p>`,
+gen(d){
+  const a=ri(2,5), b=ri(2,5), m=ri(2,4), n=ri(2,4), c=ri(1,4);
+  const f=T`${a}x^{${m}}+${b}y^{${n}}+${c}xy`;
+  const askX=Math.random()<0.5;
+  const correct=askX?T`${a*m}x^{${m-1}}+${c}y`:T`${b*n}y^{${n-1}}+${c}x`;
+  const wrong=askX?[T`${a*m}x^{${m-1}}+${c}x`,T`${a}x^{${m-1}}+${c}y`,T`${a*m}x^{${m}}+${c}y`]:[T`${b*n}y^{${n-1}}+${c}y`,T`${b}y^{${n-1}}+${c}x`,T`${b*n}y^{${n}}+${c}x`];
+  return MC(T`For $f(x,y)=${f}$, find $\frac{\partial f}{\partial ${askX?'x':'y'}}$.`,correct,wrong,T`Differentiate only with respect to ${askX?'x':'y'}.`,T`Treat ${askX?'y':'x'} as a constant.`);
+}});
+
+LEVELS.push({ world: 'p', id: 'p2', title: 'Product, quotient and chain rules in partials', short: 'Apply the ordinary rules one variable at a time.',
+learn: T`<p>For products such as \(x^a y^b\), the product rule is already built into the powers. For \(\sin(xy)\), \(e^{xy}\) and \(\ln(x^2+y^2)\), use the chain rule and remember the other variable is constant.</p>`,
+gen(d){
+  const a=ri(2,4), b=ri(2,4), askX=Math.random()<0.5, kind=pick(['power','sin','exp','log']);
+  let f,correct,wrong;
+  if(kind==='power'){
+    f=T`x^{${a}}y^{${b}}`;
+    correct=askX?T`${a}x^{${a-1}}y^{${b}}`:T`${b}x^{${a}}y^{${b-1}}`;
+    wrong=askX?[T`${a}x^{${a}}y^{${b}}`,T`${a}x^{${a-1}}y^{${b-1}}`,T`${b}x^{${a}}y^{${b-1}}`]:[T`${b}x^{${a}}y^{${b}}`,T`${b}x^{${a-1}}y^{${b-1}}`,T`${a}x^{${a-1}}y^{${b}}`];
+  } else if(kind==='sin'){
+    f=T`\sin(xy)`;
+    correct=askX?T`y\cos(xy)`:T`x\cos(xy)`;
+    wrong=askX?[T`\cos(xy)`,T`-y\cos(xy)`,T`x\cos(xy)`]:[T`\cos(xy)`,T`-x\cos(xy)`,T`y\cos(xy)`];
+  } else if(kind==='exp'){
+    f=T`e^{xy}`;
+    correct=askX?T`y e^{xy}`:T`x e^{xy}`;
+    wrong=askX?[T`e^{xy}`,T`-y e^{xy}`,T`x e^{xy}`]:[T`e^{xy}`,T`-x e^{xy}`,T`y e^{xy}`];
+  } else {
+    f=T`\ln(x^2+y^2)`;
+    correct=askX?T`\frac{2x}{x^2+y^2}`:T`\frac{2y}{x^2+y^2}`;
+    wrong=askX?[T`\frac{1}{x^2+y^2}`,T`\frac{x}{x^2+y^2}`,T`\frac{2y}{x^2+y^2}`]:[T`\frac{1}{x^2+y^2}`,T`\frac{y}{x^2+y^2}`,T`\frac{2x}{x^2+y^2}`];
+  }
+  return MC(T`For $f(x,y)=${f}$, find $\frac{\partial f}{\partial ${askX?'x':'y'}}$.`,correct,wrong,'Use the ordinary rule, treating the other variable as a constant.',T`Differentiate ${f} in ${askX?'x':'y'}.`);
+}});
+
+LEVELS.push({ world: 'p', id: 'p3', title: 'Higher-order and mixed partials', short: 'Differentiate twice, in either order.',
+learn: T`<p>Higher partials are written \(f_{xx}\), \(f_{yy}\) and \(f_{xy}\). For functions with continuous second partials, Clairaut's theorem gives \(f_{xy}=f_{yx}\).</p>`,
+gen(d){
+  const a=ri(2,4), b=ri(2,4);
+  const f=T`x^{${a}}y^{${b}}`;
+  const correct=T`${a*b}x^{${a-1}}y^{${b-1}}`;
+  const wrong=[T`${a*b}x^{${a}}y^{${b}}`,T`${a*b}x^{${a-1}}y^{${b}}`,T`${b}x^{${a-1}}y^{${b-1}}`];
+  return MC(T`For $f(x,y)=${f}$, find $f_{xy}=\frac{\partial^2 f}{\partial x\partial y}$.`,correct,wrong,'Differentiate in x, then in y.',T`First \(f_x=${a}x^{${a-1}}y^{${b}}\), then differentiate that in y.`);
+}});
+
+LEVELS.push({ world: 'p', id: 'p4', title: 'The chain rule for paths', short: 'Differentiate z(x(t), y(t)) with respect to t.',
+learn: T`<p>If \(z=f(x,y)\) and \(x=x(t)\), \(y=y(t)\), then \(\frac{dz}{dt}=\frac{\partial z}{\partial x}\frac{dx}{dt}+\frac{\partial z}{\partial y}\frac{dy}{dt}\).</p>`,
+gen(d){
+  const cases=[
+   {z:T`x^2y`,x:T`t^2`,y:T`t`,ans:T`5t^4`,wrong:[T`4t^3`,T`5t^5`,T`2t^3+t`]},
+   {z:T`xy`,x:T`t^2`,y:T`t^3`,ans:T`5t^4`,wrong:[T`6t^5`,T`5t^5`,T`2t^3+3t^2`]},
+   {z:T`x^2+y^2`,x:T`t`,y:T`t^2`,ans:T`2t+4t^3`,wrong:[T`2t+2t^2`,T`2+4t`,T`2t+4t^2`]},
+   {z:T`e^{xy}`,x:T`t`,y:T`t^2`,ans:T`3t^2e^{t^3}`,wrong:[T`e^{t^3}`,T`3t^2e^{t^2}`,T`3te^{t^3}`]}
+  ];
+  const c=pick(cases);
+  return MC(T`Given $z=${c.z}$, $x=${c.x}$ and $y=${c.y}$, find $\frac{dz}{dt}$.`,c.ans,c.wrong,'Substitute first, or use the chain rule.',T`Use \(z_x x'(t)+z_y y'(t)\).`);
+}});
+
+LEVELS.push({ world: 'p', id: 'p5', title: 'Implicit partial differentiation', short: 'Find ∂z/∂x when z is defined implicitly.',
+learn: T`<p>For \(F(x,y,z)=0\), \(\frac{\partial z}{\partial x}=-\frac{F_x}{F_z}\) and \(\frac{\partial z}{\partial y}=-\frac{F_y}{F_z}\). Differentiate the relation, holding the other variables fixed.</p>`,
+gen(d){
+  const cases=[
+   {F:T`x^2+y^2+z^2=1`,ans:T`-\frac{x}{z}`,wrong:[T`\frac{x}{z}`,T`-\frac{y}{z}`,T`-\frac{z}{x}`]},
+   {F:T`xyz=1`,ans:T`-\frac{z}{x}`,wrong:[T`-\frac{z}{y}`,T`\frac{z}{x}`,T`-\frac{x}{z}`]},
+   {F:T`x^2+y^2-z^2=1`,ans:T`\frac{x}{z}`,wrong:[T`-\frac{x}{z}`,T`\frac{z}{x}`,T`\frac{y}{z}`]}
+  ];
+  const c=pick(cases);
+  return MC(T`Given $${c.F}$, find $\frac{\partial z}{\partial x}$.`,c.ans,c.wrong,'Differentiate in x, treating y as constant and z as a function of x.',T`Use \(-\frac{F_x}{F_z}\).`);
+}});
+
+LEVELS.push({ world: 'p', id: 'p6', title: 'Tangent planes', short: 'Use the partials to build a tangent plane.',
+learn: T`<p>The tangent plane to \(z=f(x,y)\) at \((a,b)\) is \(z=f(a,b)+f_x(a,b)(x-a)+f_y(a,b)(y-b)\).</p>`,
+gen(d){
+  const cases=[
+   {f:T`x^2+y^2`,a:1,b:2,ans:T`z=5+2(x-1)+4(y-2)`,wrong:[T`z=5+2(x-1)+2(y-2)`,T`z=5+4(x-1)+2(y-2)`,T`z=2+2(x-1)+4(y-2)`]},
+   {f:T`x^2y`,a:1,b:2,ans:T`z=2+4(x-1)+(y-2)`,wrong:[T`z=2+2(x-1)+(y-2)`,T`z=2+4(x-1)+2(y-2)`,T`z=4+2(x-1)+(y-2)`]},
+   {f:T`xy^2`,a:2,b:1,ans:T`z=2+(x-2)+4(y-1)`,wrong:[T`z=2+2(x-2)+4(y-1)`,T`z=2+(x-2)+(y-1)`,T`z=4+(x-2)+2(y-1)`]}
+  ];
+  const c=pick(cases);
+  return MC(T`Find the tangent plane to $f(x,y)=${c.f}$ at $(${c.a},${c.b})$.`,c.ans,c.wrong,'Evaluate f and both partials at the point.',T`Use \(z=f(a,b)+f_x(a,b)(x-a)+f_y(a,b)(y-b)\).`);
+}});
+
+LEVELS.push({ world: 'p', id: 'p7', title: 'Critical points in two variables', short: 'Solve both partials equal to zero, then classify.',
+learn: T`<p>Critical points satisfy \(f_x=0\) and \(f_y=0\). The second-derivative test uses \(D=f_{xx}f_{yy}-f_{xy}^2\): \(D>0\) and \(f_{xx}>0\) is a minimum, \(D>0\) and \(f_{xx}<0\) is a maximum, and \(D<0\) is a saddle.</p>`,
+gen(d){
+  const cases=[
+   {f:T`x^2+y^2-2x-4y`,ans:T`(1,2), minimum`,wrong:[T`(1,2), maximum`,T`(2,1), minimum`,T`(0,0), saddle`]},
+   {f:T`x^2+y^2+2x-6y`,ans:T`(-1,3), minimum`,wrong:[T`(-1,3), maximum`,T`(1,-3), minimum`,T`(0,0), saddle`]},
+   {f:T`x^2-y^2`,ans:T`(0,0), saddle`,wrong:[T`(0,0), minimum`,T`(0,0), maximum`,T`(1,1), saddle`]},
+   {f:T`-x^2-y^2+4x+2y`,ans:T`(2,1), maximum`,wrong:[T`(2,1), minimum`,T`(-2,-1), maximum`,T`(0,0), saddle`]}
+  ];
+  const c=pick(cases);
+  return MC(T`Find the critical point of $f(x,y)=${c.f}$ and classify it.`,c.ans,c.wrong,'Solve fx=0 and fy=0, then use the second-derivative test.',T`Set both partial derivatives to zero.`);
+}});
+
+LEVELS.push({ world: 'p', id: 'p8', boss: true, win: BOSS_WIN, th: BOSS_THRESH, title: 'Partial derivatives review', short: 'Mixed questions from every partial-derivative level.',
+learn: T`<p>This review draws questions from every partial-derivative level. Choose the rule, hold the correct variable constant, and check the result.</p>`,
+gen: bossGen('p') });
+
+
+/* ===== World 0: Function families for Grade 12 ===== */
+LEVELS.push({ world: 'f', id: 'f1', title: 'Power functions', short: 'Differentiate and integrate powers, including negative powers.',
+learn: T`<p>Power rule: \(\frac{d}{dx}x^n=nx^{n-1}\) and \(\int x^n\,dx=\frac{x^{n+1}}{n+1}+C\) for \(n\ne-1\). The same rule works for negative powers.</p>`,
+gen(d){
+  const n=pick([-3,2,3,4]), a=ri(2,4), base=T`${a}x^{${n}}`, doDiff=Math.random()<0.5;
+  const correct=doDiff?T`${a*n}x^{${n-1}}`:T`\frac{${a}}{${n+1}}x^{${n+1}}+C`;
+  const wrong=doDiff?[T`${a*n}x^{${n}}`,T`${a}x^{${n-1}}`,T`${a*(n+1)}x^{${n+1}}`]:[T`${a}x^{${n+1}}+C`,T`\frac{${a}}{${n}}x^{${n}}+C`,T`${a*(n+1)}x^{${n+1}}+C`];
+  return MC(doDiff?T`Differentiate $${base}$.`:T`Find $\displaystyle\int ${base}\,dx$.`,correct,wrong,'Use the power rule.','Multiply by the exponent, then reduce it by one; for integration, raise the power and divide by the new power.');
+}});
+
+LEVELS.push({ world: 'f', id: 'f2', title: 'Exponential functions', short: 'Differentiate and integrate e^{kx} and a^x.',
+learn: T`<p>\(\frac{d}{dx}e^{kx}=ke^{kx}\) and \(\int e^{kx}dx=\frac1k e^{kx}+C\). For a general base, \(\frac{d}{dx}a^x=a^x\ln a\) and \(\int a^x dx=\frac{a^x}{\ln a}+C\).</p>`,
+gen(d){
+  const k=ri(2,6), a=ri(2,5), doDiff=Math.random()<0.5, useA=Math.random()<0.35;
+  const f=useA?T`${a}^x`:T`e^{${k}x}`;
+  const correct=useA?(doDiff?T`${a}^x\ln ${a}`:T`\frac{${a}^x}{\ln ${a}}+C`):(doDiff?T`${k}e^{${k}x}`:T`\frac{1}{${k}}e^{${k}x}+C`);
+  const wrong=useA?(doDiff?[T`${a}^x`,T`x${a}^{x-1}`,T`${a}^x\ln x`]:[T`${a}^x\ln ${a}+C`,T`\frac{${a}^x}{\ln x}+C`,T`${a}^x+C`]):(doDiff?[T`e^{${k}x}`,T`${k}e^{x}`,T`\frac{1}{${k}}e^{${k}x}`]:[T`${k}e^{${k}x}+C`,T`e^{${k}x}+C`,T`\frac{1}{${k}}e^{x}+C`]);
+  return MC(doDiff?T`Differentiate $${f}$.`:T`Find $\displaystyle\int ${f}\,dx$.`,correct,wrong,'Use the exponential rule.','For \(e^{kx}\), multiply by \(k\) when differentiating and divide by \(k\) when integrating.');
+}});
+
+LEVELS.push({ world: 'f', id: 'f3', title: 'Natural logarithms', short: 'Differentiate ln and integrate f′/f.',
+learn: T`<p>\(\frac{d}{dx}\ln x=\frac1x\) and \(\frac{d}{dx}\ln f(x)=\frac{f'(x)}{f(x)}\). In reverse, \(\int\frac{f'(x)}{f(x)}dx=\ln|f(x)|+C\).</p>`,
+gen(d){
+  const k=ri(2,5);
+  const cases=[
+   {op:'d',f:T`\ln x`,ans:T`\frac{1}{x}`,wrong:[T`\ln x`,T`-\frac{1}{x^2}`,T`\frac{1}{x^2}`]},
+   {op:'i',f:T`\frac{1}{x}`,ans:T`\ln|x|+C`,wrong:[T`\frac{1}{x^2}+C`,T`-\frac{1}{x^2}+C`,T`\ln x^2+C`]},
+   {op:'d',f:T`\ln(${k}x)`,ans:T`\frac{1}{x}`,wrong:[T`\frac{1}{${k}x}`,T`\frac{${k}}{x}`,T`\ln ${k}+\frac{1}{x}`]},
+   {op:'d',f:T`\ln(x^2+1)`,ans:T`\frac{2x}{x^2+1}`,wrong:[T`\frac{1}{x^2+1}`,T`\frac{2x}{x^2+1}+1`,T`\frac{2x}{x^2}`]},
+   {op:'i',f:T`\frac{2x}{x^2+1}`,ans:T`\ln(x^2+1)+C`,wrong:[T`\frac{1}{x^2+1}+C`,T`2\ln(x^2+1)+C`,T`\ln|x|+C`]}
+  ];
+  const c=pick(cases);
+  return MC(c.op==='d'?T`Differentiate $${c.f}$.`:T`Find $\displaystyle\int ${c.f}\,dx$.`,c.ans,c.wrong,'Use the log rule or the f′/f form.',"For \(\ln f(x)\), the derivative is \(f'(x)/f(x)\).");
+}});
+
+LEVELS.push({ world: 'f', id: 'f4', title: 'Trigonometric functions', short: 'Differentiate and integrate the standard trig functions.',
+learn: T`<p>Know the derivatives of \(\sin x\), \(\cos x\), \(\tan x\), \(\sec x\), \(\csc x\), \(\cot x\), \(\arcsin x\) and \(\arctan x\), together with the matching standard integrals.</p>`,
+gen(d){
+  const k=ri(2,5);
+  const cases=[
+   {op:'d',f:T`\sin(${k}x)`,ans:T`${k}\cos(${k}x)`,wrong:[T`\cos(${k}x)`,T`-${k}\cos(${k}x)`,T`${k}\sin(${k}x)`]},
+   {op:'d',f:T`\cos(${k}x)`,ans:T`-${k}\sin(${k}x)`,wrong:[T`${k}\sin(${k}x)`,T`-\sin(${k}x)`,T`-${k}\cos(${k}x)`]},
+   {op:'d',f:T`\tan x`,ans:T`\sec^2 x`,wrong:[T`\sec x\tan x`,T`-\sec^2 x`,T`\csc^2 x`]},
+   {op:'d',f:T`\sec x`,ans:T`\sec x\tan x`,wrong:[T`\sec^2 x`,T`-\sec x\tan x`,T`\tan^2 x`]},
+   {op:'d',f:T`\csc x`,ans:T`-\csc x\cot x`,wrong:[T`\csc x\cot x`,T`-\csc^2 x`,T`\cot^2 x`]},
+   {op:'d',f:T`\cot x`,ans:T`-\csc^2 x`,wrong:[T`\csc^2 x`,T`-\cot x\csc x`,T`-\sec^2 x`]},
+   {op:'d',f:T`\arcsin x`,ans:T`\frac{1}{\sqrt{1-x^2}}`,wrong:[T`\frac{1}{1+x^2}`,T`-\frac{1}{\sqrt{1-x^2}}`,T`\frac{x}{\sqrt{1-x^2}}`]},
+   {op:'d',f:T`\arctan x`,ans:T`\frac{1}{1+x^2}`,wrong:[T`\frac{1}{\sqrt{1-x^2}}`,T`-\frac{1}{1+x^2}`,T`\frac{x}{1+x^2}`]},
+   {op:'i',f:T`\sin(${k}x)`,ans:T`-\frac{1}{${k}}\cos(${k}x)+C`,wrong:[T`\frac{1}{${k}}\cos(${k}x)+C`,T`-${k}\cos(${k}x)+C`,T`\cos(${k}x)+C`]},
+   {op:'i',f:T`\cos(${k}x)`,ans:T`\frac{1}{${k}}\sin(${k}x)+C`,wrong:[T`-\frac{1}{${k}}\sin(${k}x)+C`,T`${k}\sin(${k}x)+C`,T`\sin(${k}x)+C`]},
+   {op:'i',f:T`\sec^2 x`,ans:T`\tan x+C`,wrong:[T`\sec x+C`,T`-\tan x+C`,T`\ln|\sec x|+C`]},
+   {op:'i',f:T`\sec x\tan x`,ans:T`\sec x+C`,wrong:[T`\tan x+C`,T`-\sec x+C`,T`\sec^2 x+C`]},
+   {op:'i',f:T`\frac{1}{1+x^2}`,ans:T`\arctan x+C`,wrong:[T`\arcsin x+C`,T`\ln(1+x^2)+C`,T`\frac{1}{2}\arctan x+C`]}
+  ];
+  const c=pick(cases);
+  return MC(c.op==='d'?T`Differentiate $${c.f}$.`:T`Find $\displaystyle\int ${c.f}\,dx$.`,c.ans,c.wrong,'Recall the standard trig rule.','Match the function to its derivative or standard antiderivative.');
+}});
+
+LEVELS.push({ world: 'f', id: 'f5', title: 'Hyperbolic functions', short: 'Differentiate and integrate sinh, cosh, tanh and sech.',
+learn: T`<p>\(\frac{d}{dx}\sinh x=\cosh x\), \(\frac{d}{dx}\cosh x=\sinh x\), \(\frac{d}{dx}\tanh x=\operatorname{sech}^2x\), and \(\frac{d}{dx}\operatorname{sech}x=-\operatorname{sech}x\tanh x\). The matching integrals run in reverse, with \(\int\tanh x\,dx=\ln(\cosh x)+C\).</p>`,
+gen(d){
+  const k=ri(2,5);
+  const cases=[
+   {op:'d',f:T`\sinh x`,ans:T`\cosh x`,wrong:[T`-\cosh x`,T`\sinh x`,T`\operatorname{sech}^2 x`]},
+   {op:'d',f:T`\cosh x`,ans:T`\sinh x`,wrong:[T`-\sinh x`,T`\cosh x`,T`\operatorname{sech}^2 x`]},
+   {op:'d',f:T`\tanh x`,ans:T`\operatorname{sech}^2 x`,wrong:[T`\operatorname{csch}^2 x`,T`-\operatorname{sech}^2 x`,T`\cosh x`]},
+   {op:'d',f:T`\operatorname{sech} x`,ans:T`-\operatorname{sech} x\tanh x`,wrong:[T`\operatorname{sech} x\tanh x`,T`-\operatorname{csch} x\coth x`,T`\operatorname{sech}^2 x`]},
+   {op:'d',f:T`\coth x`,ans:T`-\operatorname{csch}^2 x`,wrong:[T`\operatorname{csch}^2 x`,T`-\operatorname{sech}^2 x`,T`\operatorname{csch} x\coth x`]},
+   {op:'d',f:T`\operatorname{csch} x`,ans:T`-\operatorname{csch} x\coth x`,wrong:[T`\operatorname{csch} x\coth x`,T`-\operatorname{sech} x\tanh x`,T`-\operatorname{csch}^2 x`]},
+   {op:'d',f:T`\sinh(${k}x)`,ans:T`${k}\cosh(${k}x)`,wrong:[T`\cosh(${k}x)`,T`-${k}\cosh(${k}x)`,T`${k}\sinh(${k}x)`]},
+   {op:'i',f:T`\sinh x`,ans:T`\cosh x+C`,wrong:[T`-\cosh x+C`,T`\sinh x+C`,T`\operatorname{sech}^2 x+C`]},
+   {op:'i',f:T`\cosh x`,ans:T`\sinh x+C`,wrong:[T`-\sinh x+C`,T`\cosh x+C`,T`\tanh x+C`]},
+   {op:'i',f:T`\operatorname{sech}^2 x`,ans:T`\tanh x+C`,wrong:[T`\coth x+C`,T`-\tanh x+C`,T`\operatorname{sech} x+C`]},
+   {op:'i',f:T`\tanh x`,ans:T`\ln(\cosh x)+C`,wrong:[T`\ln(\sinh x)+C`,T`\operatorname{sech}^2 x+C`,T`-\ln(\cosh x)+C`]},
+   {op:'i',f:T`\operatorname{sech} x\tanh x`,ans:T`-\operatorname{sech} x+C`,wrong:[T`\operatorname{sech} x+C`,T`-\tanh x+C`,T`\operatorname{sech}^2 x+C`]}
+  ];
+  const c=pick(cases);
+  return MC(c.op==='d'?T`Differentiate $${c.f}$.`:T`Find $\displaystyle\int ${c.f}\,dx$.`,c.ans,c.wrong,'Recall the hyperbolic derivative or integral.','The hyperbolic derivatives follow the pattern sinh → cosh, cosh → sinh, tanh → sech².');
+}});
+
+LEVELS.push({ world: 'f', id: 'f6', title: 'Mixed function families', short: 'Choose the right rule across power, exp, ln, trig and hyperbolic.',
+learn: T`<p>Mixed practice across the Grade 12 function families. Identify the family first, then apply the matching derivative or integral rule.</p>`,
+gen(d){
+  const cases=[
+   {op:'d',f:T`e^{3x}`,ans:T`3e^{3x}`,wrong:[T`e^{3x}`,T`\frac{1}{3}e^{3x}`,T`3e^{x}`]},
+   {op:'d',f:T`\ln(x^2+1)`,ans:T`\frac{2x}{x^2+1}`,wrong:[T`\frac{1}{x^2+1}`,T`\frac{2x}{x^2}`,T`\ln(2x)`]},
+   {op:'d',f:T`x^{-2}`,ans:T`-2x^{-3}`,wrong:[T`-2x^{-1}`,T`-2x^{-2}`,T`-\frac{1}{2}x^{-3}`]},
+   {op:'d',f:T`\sin(2x)`,ans:T`2\cos(2x)`,wrong:[T`\cos(2x)`,T`-2\cos(2x)`,T`2\sin(2x)`]},
+   {op:'d',f:T`\sinh(3x)`,ans:T`3\cosh(3x)`,wrong:[T`\cosh(3x)`,T`-3\cosh(3x)`,T`3\sinh(3x)`]},
+   {op:'i',f:T`\frac{1}{x}`,ans:T`\ln|x|+C`,wrong:[T`-\frac{1}{x^2}+C`,T`\ln x^2+C`,T`\frac{x^2}{2}+C`]},
+   {op:'i',f:T`e^{2x}`,ans:T`\frac{1}{2}e^{2x}+C`,wrong:[T`2e^{2x}+C`,T`e^{2x}+C`,T`\frac{1}{2}e^{x}+C`]},
+   {op:'i',f:T`\cos(3x)`,ans:T`\frac{1}{3}\sin(3x)+C`,wrong:[T`-\frac{1}{3}\sin(3x)+C`,T`3\sin(3x)+C`,T`\sin(3x)+C`]},
+   {op:'i',f:T`\operatorname{sech}^2 x`,ans:T`\tanh x+C`,wrong:[T`\coth x+C`,T`-\tanh x+C`,T`\operatorname{sech} x+C`]},
+   {op:'i',f:T`x^3`,ans:T`\frac{x^4}{4}+C`,wrong:[T`3x^2+C`,T`\frac{x^3}{3}+C`,T`4x^4+C`]},
+   {op:'i',f:T`\frac{2x}{x^2+1}`,ans:T`\ln(x^2+1)+C`,wrong:[T`\frac{1}{x^2+1}+C`,T`2\ln(x^2+1)+C`,T`\ln|x|+C`]}
+  ];
+  const c=pick(cases);
+  return MC(c.op==='d'?T`Differentiate $${c.f}$.`:T`Find $\displaystyle\int ${c.f}\,dx$.`,c.ans,c.wrong,'Identify the family first.','Use the power, exponential, log, trig or hyperbolic rule.');
+}});
+
+LEVELS.push({ world: 'f', id: 'f7', boss: true, win: BOSS_WIN, th: BOSS_THRESH, title: 'Function families review', short: 'Mixed questions across all five families.',
+learn: T`<p>This review draws from every function-family level. Identify the family, choose the rule, and check the signs and constants.</p>`,
+gen: bossGen('f') });
+
+/* Rules-only edition: drop limits, L'Hôpital, Riemann sums and improper integrals. */
+const SKIP_LEVELS = new Set(['d1','d2','d3','d4','d5','d6','d12','i1','i10']);
+for (let k = LEVELS.length - 1; k >= 0; k--) {
+  if (SKIP_LEVELS.has(LEVELS[k].id)) LEVELS.splice(k, 1);
+}
+
+/* ===== Lesson videos: one hand-picked, verified YouTube link per level ===== */
+const VIDEOS = {
+  d1:  [{ id: 'cfOcOgr0E7U', title: 'Limits by direct substitution', by: 'Khan Academy' }],
+  d2:  [{ id: 'fOrOeZA-vdY', title: 'Evaluating Limits By Factoring', by: 'The Organic Chemistry Tutor' }],
+  d3:  [{ id: 'nOnd3SiYZqM', title: 'One-sided limits from graphs', by: 'Khan Academy' }],
+  d4:  [{ id: 'eh_ATp0hbB0', title: 'Introduction to limits at infinity', by: 'Khan Academy' }],
+  d5:  [{ id: 'Ve99biD1KtA', title: 'Proof: lim (sin x)/x', by: 'Khan Academy' }],
+  d6:  [{ id: '-aTLjoDT1GQ', title: 'Definition of the Derivative', by: 'The Organic Chemistry Tutor' }],
+  d7:  [{ id: 'mzOBlH32qdk', title: 'Differentiating polynomials', by: 'Khan Academy' }],
+  d8:  [{ id: '17X5g9QArTc', title: 'Product Rule For Derivatives', by: 'The Organic Chemistry Tutor' },
+        { id: '8jVDEcQ0wXk', title: 'Quotient Rule For Derivatives', by: 'The Organic Chemistry Tutor' }],
+  d9:  [{ id: '0T0QrHO56qg', title: 'Chain rule', by: 'Khan Academy' }],
+  d10: [{ id: 'TDHI-aieyfk', title: 'Derivatives of sin x, cos x, tan x, e^x and ln x', by: 'Khan Academy' }],
+  d11: [{ id: 'mSVrqKZDRF4', title: 'Implicit differentiation', by: 'Khan Academy' }],
+  d12: [{ id: 'PdSzruR5OeE', title: "Introduction to l'Hôpital's rule", by: 'Khan Academy' }],
+  d13: [{ id: 'fqQ6sslzyhY', title: 'The derivative & tangent line equations', by: 'Khan Academy' }],
+  d14: [{ id: 'lx8RcYcYVuU', title: 'Optimization Problems - Calculus', by: 'The Organic Chemistry Tutor' }],
+  d15: [{ id: '5yfh5cf4-0w', title: 'Calculus 1 - Derivatives', by: 'The Organic Chemistry Tutor' }],
+  i1:  [{ id: 'AkUa9Fkz2rw', title: 'Riemann Sums - Midpoint, Left & Right Endpoints', by: 'The Organic Chemistry Tutor' }],
+  i2:  [{ id: '0RdI3-8G4Fs', title: 'Introduction to definite integrals', by: 'Khan Academy' }],
+  i3:  [{ id: 'MMv-027KEqU', title: 'Antiderivatives and indefinite integrals', by: 'Khan Academy' }],
+  i4:  [{ id: 'C7ducZoLKgw', title: 'Fundamental theorem of calculus (Part 1)', by: 'Khan Academy' }],
+  i5:  [{ id: 'JbfVrwxuPxM', title: 'Fundamental theorem of calculus (Part 2)', by: 'Khan Academy' }],
+  i6:  [{ id: 'sdYdnpYn-1o', title: 'How To Integrate Using U-Substitution', by: 'The Organic Chemistry Tutor' }],
+  i7:  [{ id: 'yJF3kv8UzGo', title: 'Calculus - Integration By Parts', by: 'The Organic Chemistry Tutor' }],
+  i8:  [{ id: '6rXByMcuAyI', title: 'Integration By Partial Fractions', by: 'The Organic Chemistry Tutor' }],
+  i9:  [{ id: '3pXALn2ovIE', title: 'Trigonometric Integrals', by: 'The Organic Chemistry Tutor' }],
+  i10: [{ id: 'ND9cEdfCFr0', title: 'Improper Integrals - Convergence and Divergence', by: 'The Organic Chemistry Tutor' }],
+  i11: [{ id: 'wQXYtsyfbqg', title: 'Area between curves', by: 'Khan Academy' }],
+  i12: [{ id: 'SAHSVg7Jw_A', title: 'Disk & Washer Method - Calculus', by: 'The Organic Chemistry Tutor' },
+        { id: 'D5sT1br9soI', title: 'Shell Method - Volume of Revolution', by: 'The Organic Chemistry Tutor' }],
+  i13: [{ id: 'MB1xDNKimNc', title: 'Average Value of a Function Over an Interval', by: 'The Organic Chemistry Tutor' }],
+  i14: [{ id: '3RwUIP9pMSo', title: 'Calculus 2 Final Exam Review', by: 'The Organic Chemistry Tutor' }],
+  d16: [{ id: 'mSVrqKZDRF4', title: 'Implicit differentiation', by: 'Khan Academy' },
+        { id: 'YmsZRQJJMG8', title: 'Multivariable implicit differentiation', by: 'PatrickJMT' }],
+  i15: [{ id: 'MMv-027KEqU', title: 'Antiderivatives and indefinite integrals', by: 'Khan Academy' },
+        { id: '3pXALn2ovIE', title: 'Trigonometric Integrals', by: 'The Organic Chemistry Tutor' }],
+  i16: [{ id: 'sdYdnpYn-1o', title: 'How To Integrate Using U-Substitution', by: 'The Organic Chemistry Tutor' },
+        { id: 'yJF3kv8UzGo', title: 'Calculus - Integration By Parts', by: 'The Organic Chemistry Tutor' },
+        { id: '6rXByMcuAyI', title: 'Integration By Partial Fractions', by: 'The Organic Chemistry Tutor' },
+        { id: '3pXALn2ovIE', title: 'Trigonometric Integrals', by: 'The Organic Chemistry Tutor' }],
+  f1:  [{ id: 'mzOBlH32qdk', title: 'Differentiating polynomials', by: 'Khan Academy' }],
+  f2:  [{ id: 'TDHI-aieyfk', title: 'Derivatives of sin x, cos x, tan x, e^x and ln x', by: 'Khan Academy' }],
+  f3:  [{ id: 'TDHI-aieyfk', title: 'Derivatives of sin x, cos x, tan x, e^x and ln x', by: 'Khan Academy' }],
+  f4:  [{ id: 'TDHI-aieyfk', title: 'Derivatives of sin x, cos x, tan x, e^x and ln x', by: 'Khan Academy' },
+        { id: '3pXALn2ovIE', title: 'Trigonometric Integrals', by: 'The Organic Chemistry Tutor' }],
+  f5:  [{ id: 'Q6-QZxUDfE0', title: 'Derivatives of Hyperbolic Functions', by: 'The Organic Chemistry Tutor' },
+        { id: '2Mz_KYAyUo4', title: 'Integral of Hyperbolic Functions', by: 'The Organic Chemistry Tutor' }],
+  f6:  [{ id: 'mzOBlH32qdk', title: 'Differentiating polynomials', by: 'Khan Academy' },
+        { id: 'TDHI-aieyfk', title: 'Derivatives of sin x, cos x, tan x, e^x and ln x', by: 'Khan Academy' },
+        { id: 'sdYdnpYn-1o', title: 'How To Integrate Using U-Substitution', by: 'The Organic Chemistry Tutor' },
+        { id: 'Q6-QZxUDfE0', title: 'Derivatives of Hyperbolic Functions', by: 'The Organic Chemistry Tutor' }],
+  f7:  [{ id: '5yfh5cf4-0w', title: 'Calculus 1 - Derivatives', by: 'The Organic Chemistry Tutor' },
+        { id: '3RwUIP9pMSo', title: 'Calculus 2 Final Exam Review', by: 'The Organic Chemistry Tutor' }],
+  p1:  [{ id: 'AXqhWeUEtQU', title: 'Partial derivatives, introduction', by: 'Khan Academy' },
+        { id: 'JAf_aSIJryg', title: 'Partial Derivatives - Multivariable Calculus', by: 'The Organic Chemistry Tutor' }],
+  p2:  [{ id: 'JAf_aSIJryg', title: 'Partial Derivatives - Multivariable Calculus', by: 'The Organic Chemistry Tutor' },
+        { id: 'EkZGBdY0vlg', title: 'Calculus 3 Lecture 13.3: Partial Derivatives', by: 'Professor Leonard' }],
+  p3:  [{ id: 'JwdhcJQWgQY', title: 'Computing Partial Derivatives and Equality of Mixed Partials', by: 'YouTube' }],
+  p4:  [{ id: '9yCtWfI_Vjg', title: 'The Multi-Variable Chain Rule', by: 'Dr. Trefor Bazett' }],
+  p5:  [{ id: 'YmsZRQJJMG8', title: 'MultiVariable Calculus - Implicit Differentiation', by: 'PatrickJMT' }],
+  p6:  [{ id: '0ukabMiAxUo', title: 'Tangent Lines, Normal Lines, and Tangent Planes', by: 'Jordan Webster' }],
+  p7:  [{ id: 'RqRnKry9L3g', title: 'Critical Points of Multivariable Functions', by: 'Krista King' }],
+  p8:  [{ id: 'EkZGBdY0vlg', title: 'Calculus 3 Lecture 13.3: Partial Derivatives', by: 'Professor Leonard' },
+        { id: 'JAf_aSIJryg', title: 'Partial Derivatives - Multivariable Calculus', by: 'The Organic Chemistry Tutor' }],
+};
+LEVELS.forEach(L => { if (VIDEOS[L.id]) L.videos = VIDEOS[L.id]; });
+
+if (typeof module !== 'undefined') module.exports = { LEVELS, WORLDS, WIN, THRESH, VIDEOS };
+
+/* ===== Limits to Infinity: game engine ===== */
+(function () {
+  const KEY = 'calc-rules-progress-v1';
+  let S = { lv: {}, teacher: false };
+  const V = { screen: 'map', world: 'f', level: null, tab: 'practice', q: null, answered: false, hint: false, pick: null, typed: '', correct: null, banner: false, just: null, lastQ: null, resetArm: false };
+  const app = document.getElementById('app');
+  let AC=null, MUTED=false;
+  try { MUTED = localStorage.getItem('calc-rules-mute') === '1'; } catch(e) {}
+  function actx(){ try{ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended') AC.resume(); }catch(e){ AC=null; } return AC; }
+  function tone(f,d,type,w,v){ const c=actx(); if(!c||MUTED) return; const t=c.currentTime+(w||0), o=c.createOscillator(), g=c.createGain(); o.type=type||'sine'; o.frequency.setValueAtTime(f,t); g.gain.setValueAtTime(.0001,t); g.gain.linearRampToValueAtTime(v||.14,t+.012); g.gain.exponentialRampToValueAtTime(.0001,t+d); o.connect(g); g.connect(c.destination); o.start(t); o.stop(t+d+.03); }
+  const SFX={
+    correct(){ tone(660,.12,'sine',0,.14); tone(990,.2,'sine',.1,.14); },
+    wrong(){ tone(150,.24,'sine',0,.10); tone(120,.32,'sine',.1,.08); },
+    tick(){ tone(1040,.04,'square',0,.04); },
+    win(){ [523,659,784,1047,1319].forEach((f,i)=>tone(f,.26,'sine',i*.11,.16)); tone(1568,.55,'sine',.58,.12); }
+  };
+  function confetti(n){
+    if(document.querySelector('.confetti-canvas')) return;
+    n=n||130;
+    const c=document.createElement('canvas'); c.className='confetti-canvas'; c.width=innerWidth; c.height=innerHeight; document.body.appendChild(c);
+    const x=c.getContext('2d'), cols=['#1C6E7D','#E9A614','#C23B51','#1F7654','#A12A77','#4B6072'];
+    const ps=Array.from({length:n},(_,i)=>({x:c.width*(.5+(Math.random()-.5)*.25),y:c.height*.4,vx:(Math.random()-.5)*13,vy:Math.random()*-13-3,w:5+Math.random()*7,h:8+Math.random()*8,rot:Math.random()*6.28,vr:(Math.random()-.5)*.3,col:cols[i%cols.length]}));
+    let f=0;
+    (function draw(){ x.clearRect(0,0,c.width,c.height); ps.forEach(p=>{ p.vy+=.32; p.vx*=.995; p.x+=p.vx; p.y+=p.vy; p.rot+=p.vr; x.save(); x.translate(p.x,p.y); x.rotate(p.rot); x.fillStyle=p.col; x.fillRect(-p.w/2,-p.h/2,p.w,p.h); x.restore(); }); f++; if(f<190) requestAnimationFrame(draw); else c.remove(); })();
+  }
+  function toggleMute(){ MUTED=!MUTED; try{localStorage.setItem('calc-rules-mute',MUTED?'1':'0');}catch(e){} draw(); if(!MUTED) SFX.tick(); }
+  const muteLabel=()=>MUTED?'🔇 Muted':'🔊 Sound';
+
+
+  // Storage adapter. Prefers the Claude artifact storage API when present,
+  // otherwise falls back to localStorage so the file works when self-hosted.
+  const Store = {
+    async get() {
+      try {
+        if (window.storage) { const r = await window.storage.get(KEY, false); return r && r.value ? JSON.parse(r.value) : null; }
+        const raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null;
+      } catch (e) { return null; }
+    },
+    async set(v) {
+      try {
+        if (window.storage) { await window.storage.set(KEY, JSON.stringify(v), false); return; }
+        localStorage.setItem(KEY, JSON.stringify(v));
+      } catch (e) { }
+    },
+  };
+  const save = () => Store.set(S);
+
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const R = s => s;
+  function K(t, disp){ return (disp ? '\\[' + t + '\\]' : '\\(' + t + '\\)'); }
+  function typeset(){ if(window.MathJax && MathJax.typesetPromise){ try{ MathJax.typesetClear && MathJax.typesetClear(); }catch(e){} MathJax.typesetPromise([app]).catch(function(){}); } }
+
+  const levelsOf = w => LEVELS.filter(l => l.world === w);
+  const lvs = id => S.lv[id] || (S.lv[id] = { h: [], m: false, n: 0 });
+  const win = L => L.win || WIN, th = L => L.th || THRESH;
+  const total = () => LEVELS.length;
+  const doneCount = () => LEVELS.filter(L => lvs(L.id).m).length;
+
+  // Encouragement and praise, in the voice of a voyage toward the infinite.
+  const PRAISE = [
+    'Correct — that mark is fixed on your chart.',
+    'Clean work. Keep the wind at your back.',
+    'Yes. Another sounding taken.',
+    'That\u2019s it. The current is with you.',
+    'Right. Steady on this heading.',
+    'Correct. The horizon keeps opening.',
+    'Well held. Momentum is building.',
+    'Nailed it. On to the next mark.',
+  ];
+  const MASTERY = [
+    'One more stretch of coast charted.',
+    'The map grows under your hand.',
+    'Another level falls to good seamanship.',
+    'You are steering well — the voyage continues.',
+    'The tide is rising in your favour.',
+    'A clean passage. The next heading is clear.',
+  ];
+  function encouragement(n) {
+    const T = total();
+    if (n === 0) return 'Every chart starts blank. Open the first level and make your first mark.';
+    if (n >= T) return 'The whole map is charted. You have carried calculus from power functions to partial derivatives.';
+    if (n < T * 0.25) return 'A strong start — the open sea lies ahead. Keep going.';
+    if (n < T * 0.5) return 'You are finding your rhythm. Steady progress beats a fast start.';
+    if (n < T * 0.75) return 'More than a third of the voyage is behind you. Do not slacken now.';
+    return 'The far shore is in sight. A few more levels and the course is complete.';
+  }
+  function milestoneText(n) {
+    const T = total();
+    if (n === T) return 'Every level mastered. You have finished the course — from power functions to partial derivatives.';
+    if (n === 1) return 'The first mark is on the map. Every great voyage begins with a single sounding.';
+    const iAll = levelsOf('i').every(L => lvs(L.id).m);
+    const dAll = levelsOf('d').every(L => lvs(L.id).m);
+    if (iAll) return 'Integration is charted too. Only the final proof of the whole voyage remains.';
+    if (dAll) return 'Differentiation is fully charted. Ahead lies integration — the long, rewarding crossing.';
+    if (n === Math.floor(T / 2)) return 'Halfway to the infinite. The winds are holding — keep this heading.';
+    if (n % 5 === 0) return n + ' levels mastered. The coastline is slipping away behind you.';
+    return null;
+  }
+  const score = L => lvs(L.id).h.slice(-win(L)).reduce((a, b) => a + b, 0);
+  const fmt = x => Number.isInteger(x) ? String(x) : x.toFixed(1);
+  const glyph = (L, i) => L.boss ? (L.world === 'd' ? K("f'") : L.world === 'p' ? K('\\partial') : L.world === 'f' ? K('\\mathcal{F}') : K('\\textstyle\\int')) : String(i + 1);
+  const glyphSVG = (L, i) => L.boss ? (L.world === 'd' ? '<tspan font-style="italic">f</tspan><tspan dy="-0.45em" font-size="0.7em">\u2032</tspan>' : L.world === 'p' ? '\u2202' : L.world === 'f' ? 'F' : '\u222B') : String(i + 1);
+  function unlocked(L) {
+    if (S.teacher) return true;
+    const ls = levelsOf(L.world), i = ls.indexOf(L);
+    if (i > 0) return lvs(ls[i - 1].id).m;
+    if (L.world === 'f') return true;
+    if (L.world === 'd') return true;
+    const prev = levelsOf('d'); return lvs(prev[prev.length - 1].id).m;
+  }
+  const current = w => levelsOf(w).find(L => unlocked(L) && !lvs(L.id).m);
+  function diff(L) {
+    if (lvs(L.id).m) return pick([1, 2, 2]);
+    const sc = score(L), w = win(L);
+    return sc < 0.4 * w ? 0 : sc < 0.7 * w ? 1 : 2;
+  }
+  function nextLevel(L) {
+    const ls = levelsOf(L.world), i = ls.indexOf(L);
+    if (i < ls.length - 1) return ls[i + 1];
+    if (L.world === 'f') return levelsOf('d')[0];
+    if (L.world === 'd') return levelsOf('i')[0];
+    if (L.world === 'i') return levelsOf('p')[0];
+    return null;
+  }
+
+  /* ---------- map ---------- */
+  function mapSVG(w) {
+    const ls = levelsOf(w), n = ls.length, W = 1000, H = 330, x0 = 70, x1 = 930, yb = 292, sc = 230;
+    const f = w === 'd' ? (x => 0.5 + 0.3 * Math.sin(2 * Math.PI * 1.45 * x + 0.35))
+                        : (x => 0.36 + 0.2 * Math.sin(2 * Math.PI * 0.95 * x + 1.2) + 0.22 * x);
+    const X = u => x0 + (x1 - x0) * u, Y = v => yb - sc * v;
+    let g = '';
+    const gs = (x1 - x0) / 20;
+    for (let k = 0; k <= 20; k++) g += `<line class="grid" x1="${(x0 + k * gs).toFixed(1)}" y1="24" x2="${(x0 + k * gs).toFixed(1)}" y2="${yb}"/>`;
+    for (let gy = yb; gy >= 24; gy -= gs) g += `<line class="grid" x1="${x0}" y1="${gy.toFixed(1)}" x2="${x1}" y2="${gy.toFixed(1)}"/>`;
+    g += `<line class="axis" x1="${x0 - 24}" y1="${yb}" x2="${x1 + 24}" y2="${yb}"/>`;
+    let d = '';
+    for (let i = 0; i <= 240; i++) { const u = i / 240; d += (i ? 'L' : 'M') + X(u).toFixed(1) + ' ' + Y(f(u)).toFixed(1); }
+    const us = ls.map((_, i) => i / (n - 1));
+    const bossDone = lvs(ls[n - 1].id).m;
+    let under = '', over = '';
+    if (w === 'i') {
+      if (bossDone) under += `<path class="area ${V.just === ls[n - 1].id ? 'reveal-fade' : ''}" d="${d} L${X(1)} ${yb} L${X(0)} ${yb} Z"/>`;
+      ls.slice(0, -1).forEach((L, i) => {
+        if (!lvs(L.id).m) return;
+        const xa = X(us[i]), xb = X(us[i + 1]), y = Y(f(us[i]));
+        under += `<rect class="rect ${V.just === L.id ? 'reveal' : ''}" x="${xa.toFixed(1)}" y="${y.toFixed(1)}" width="${(xb - xa).toFixed(1)}" height="${(yb - y).toFixed(1)}"/>`;
+      });
+    } else {
+      ls.forEach((L, i) => {
+        if (L.boss || !lvs(L.id).m) return;
+        const u = us[i], e = 1e-4, s = (f(u + e) - f(u - e)) / (2 * e), dy = -sc * s / (x1 - x0), len = Math.hypot(1, dy), l = 105;
+        const ux = l / len, uy = dy * l / len, cx = X(u), cy = Y(f(u));
+        under += `<line class="tan ${V.just === L.id ? 'reveal' : ''}" x1="${(cx - ux).toFixed(1)}" y1="${(cy - uy).toFixed(1)}" x2="${(cx + ux).toFixed(1)}" y2="${(cy + uy).toFixed(1)}"/>`;
+      });
+    }
+    const cur = current(w);
+    let nodes = '';
+    ls.forEach((L, i) => {
+      const cx = X(us[i]), cy = Y(f(us[i])), st = lvs(L.id), un = unlocked(L);
+      const cls = st.m ? 'done' : un ? 'open' : 'locked', r = L.boss ? 19 : 15;
+      nodes += `<g class="node ${cls}" data-id="${L.id}" ${un ? 'tabindex="0" role="button"' : ''} aria-label="${esc((L.boss ? 'Review' : 'Level ' + (i + 1)) + ': ' + L.title + (st.m ? ', mastered' : un ? '' : ', locked'))}"><title>${esc(L.title)}</title>${L === cur ? `<circle class="halo" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r + 8}"/>` : ''}<circle class="dot" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r}"/><text x="${cx.toFixed(1)}" y="${cy.toFixed(1)}" dy="0.36em">${glyphSVG(L, i)}</text></g>`;
+    });
+    return `<svg class="map ${bossDone ? 'complete' : ''}" viewBox="0 0 ${W} ${H}" role="group" aria-label="${w === 'd' ? 'Differentiation' : w === 'p' ? 'Partial derivatives' : w === 'f' ? 'Function families' : 'Integration'} level map">${g}${under}<path class="curve" d="${d}"/>${over}${nodes}</svg>`;
+  }
+
+  function drawMap() {
+    const w = V.world, ls = levelsOf(w);
+    const done = LEVELS.filter(L => lvs(L.id).m).length;
+    const tabs = WORLDS.map(Wd => {
+      const n = levelsOf(Wd.id).filter(L => lvs(L.id).m).length, N = levelsOf(Wd.id).length;
+      return `<button class="world ${Wd.id === w ? 'on' : ''}" data-w="${Wd.id}" aria-pressed="${Wd.id === w}"><span class="wglyph">${K(Wd.glyph)}</span><span class="wname">${Wd.title}</span><span class="wcount">${n} of ${N} mastered</span></button>`;
+    }).join('');
+    const list = ls.map((L, i) => {
+      const st = lvs(L.id), un = unlocked(L), seen = Math.min(st.h.length, win(L));
+      const status = st.m ? 'Mastered' : !un ? 'Locked' : st.h.length ? `${fmt(score(L))} of last ${seen}` : 'Not started';
+      return `<li><button class="lvrow ${st.m ? 'done' : un ? 'open' : 'locked'}" data-id="${L.id}" ${un ? '' : 'disabled'}><span class="lvn">${glyph(L, i)}</span><span class="lvt"><strong>${esc(L.title)}</strong><span class="lvd">${R(L.short)}</span></span><span class="lvs">${status}</span></button></li>`;
+    }).join('');
+    app.innerHTML = `
+      <header class="top">
+        <h1 class="title"><span class="t-main">Calculus</span><span class="t-sub">rules &amp; functions</span></h1>
+        <div class="intro">
+          <p class="lede">A rules-first calculus game: how to differentiate and integrate different types of functions. No limits. Each level opens once you have mastered the one before it.</p>
+          <p class="tally"><strong>${done}</strong> of ${LEVELS.length} levels mastered</p>
+          <div class="journey" role="progressbar" aria-label="Course progress" aria-valuemin="0" aria-valuemax="${LEVELS.length}" aria-valuenow="${done}"><span class="jbar" style="width:${(done / LEVELS.length * 100).toFixed(1)}%"></span></div>
+        </div>
+      </header>
+      <nav class="worlds" aria-label="Choose a part of the course">${tabs}</nav>
+      <div class="mapwrap">${mapSVG(w)}</div>
+      <p class="mapnote">${w === 'd' ? 'Every level you master draws its tangent line on the curve.' : w === 'i' ? 'Every level you master adds a rectangle under the curve. Master the review to fill in the exact area.' : w === 'f' ? 'Every level you master adds a function-family node to the map.' : 'Every level you master adds a node to the partial-derivative map.'}</p>
+      <p class="swipe">Swipe the map to explore &rarr;</p>
+      <p class="mapnote"><em>${esc(encouragement(done))}</em></p>
+      <ol class="levels">${list}</ol>
+      <footer class="foot">
+        <label class="teach"><input type="checkbox" id="teacher" ${S.teacher ? 'checked' : ''}> Teacher preview: unlock every level</label>
+        <button id="reset" class="quiet">${V.resetArm ? 'Click again to erase all progress' : 'Reset progress'}</button>
+        <button id="mute" class="quiet">${muteLabel()}</button>
+      </footer>`;
+    V.just = null;
+    const mw = app.querySelector('.mapwrap'), cn = app.querySelector('.node .halo');
+    if (mw && cn && mw.scrollWidth > mw.clientWidth) { const svg = mw.querySelector('svg'); const fx = (+cn.getAttribute('cx')) / 1000; mw.scrollLeft = fx * svg.clientWidth - mw.clientWidth / 2; }
+    app.querySelectorAll('.world').forEach(b => b.onclick = () => { V.world = b.dataset.w; draw(); });
+    app.querySelectorAll('.lvrow').forEach(b => b.onclick = () => openLevel(b.dataset.id));
+    app.querySelectorAll('.node[tabindex]').forEach(g => {
+      g.onclick = () => openLevel(g.dataset.id);
+      g.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLevel(g.dataset.id); } };
+    });
+    document.getElementById('teacher').onchange = e => { S.teacher = e.target.checked; save(); draw(); };
+    const mb=document.getElementById('mute'); if(mb) mb.onclick=toggleMute;
+    document.getElementById('reset').onclick = () => {
+      if (!V.resetArm) { V.resetArm = true; draw(); document.getElementById('reset').focus(); setTimeout(() => { if (V.resetArm) { V.resetArm = false; if (V.screen === 'map') draw(); } }, 4000); return; }
+      S = { lv: {}, teacher: S.teacher }; V.resetArm = false; save(); draw();
+    };
+  }
+
+  /* ---------- level ---------- */
+  function openLevel(id) {
+    const L = LEVELS.find(l => l.id === id);
+    if (!L || !unlocked(L)) return;
+    V.screen = 'level'; V.level = L; V.world = L.world; V.tab = lvs(L.id).n === 0 ? 'learn' : 'practice';
+    newQ(); draw(); window.scrollTo(0, 0);
+    const h = document.getElementById('lvtitle'); if (h) h.focus({ preventScroll: true });
+  }
+  function newQ() {
+    const L = V.level; let q, tries = 0;
+    do { q = L.gen(diff(L)); tries++; } while (q.q === V.lastQ && tries < 8);
+    V.lastQ = q.q; V.q = q; V.answered = false; V.hint = false; V.pick = null; V.typed = ''; V.correct = null; V.banner = false;
+  }
+  function parseNum(s, pi) {
+    s = s.trim().replace(/\s+/g, '').replace(/[−–]/g, '-');
+    if (pi) { s = s.replace(/π|pi/gi, ''); if (s === '' || s === '+') s = '1'; if (s === '-') s = '-1'; s = s.replace(/^([-+]?)\//, (m, g) => g + '1/'); }
+    const m = s.match(/^([-+]?(?:\d+\.?\d*|\.\d+))(?:\/([-+]?(?:\d+\.?\d*|\.\d+)))?$/);
+    if (!m) return null;
+    const a = parseFloat(m[1]), b = m[2] !== undefined ? parseFloat(m[2]) : 1;
+    return b === 0 ? null : a / b;
+  }
+  function record(val) {
+    const L = V.level, st = lvs(L.id);
+    st.h.push(val); if (st.h.length > 40) st.h = st.h.slice(-40); st.n++;
+    if (!st.m && st.h.length >= win(L) && score(L) >= th(L)) { st.m = true; V.banner = true; V.just = L.id; }
+    save();
+  }
+  function finish() {
+    V.answered = true; record(V.correct ? (V.hint ? 0.5 : 1) : 0);
+    if (V.correct) SFX.correct(); else SFX.wrong();
+    draw();
+    if (V.banner) { SFX.win(); confetti(doneCount() === total() ? 220 : 140); }
+    const fb = document.getElementById('fb'); if (fb) fb.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    const nx = document.getElementById('next'); if (nx) nx.focus({ preventScroll: true });
+  }
+  function answerMC(k) { if (V.answered) return; V.pick = k; V.correct = k === V.q.ans; finish(); }
+  function answerNum() {
+    const inp = document.getElementById('ans'), v = parseNum(inp.value, V.q.pi);
+    if (v === null) { document.getElementById('err').textContent = V.q.pi ? 'Enter the multiple of π as a number or fraction, such as 3/2.' : 'Enter a whole number, a decimal, or a fraction such as -3/4.'; inp.focus(); return; }
+    V.typed = inp.value; V.correct = Math.abs(v - V.q.ans) <= Math.max(0.005, Math.abs(V.q.ans) * 1e-3); finish();
+  }
+
+  function videoHTML(L) {
+    if (!L.videos || !L.videos.length) return '';
+    const cards = L.videos.map(v => `<figure class="vid"><div class="frame"><iframe src="https://www.youtube-nocookie.com/embed/${v.id}" title="${esc(v.title)}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div><figcaption class="vcap"><b>${esc(v.title)}</b> — ${esc(v.by)}. <a href="https://www.youtube.com/watch?v=${v.id}" target="_blank" rel="noopener">Watch on YouTube</a></figcaption></figure>`).join('');
+    return `<div class="vids"><h3 class="vhead">Watch a lesson</h3><div class="vidgrid">${cards}</div></div>`;
+  }
+
+  function practiceHTML(L) {
+    const q = V.q, nx = nextLevel(L);
+    let h = '';
+    if (V.banner) {
+      const dn = doneCount(), T = total(), ms = milestoneText(dn);
+      const all = doneCount() === total();
+      h += `<div class="banner" role="status"><p><strong>${all ? '🏆 Course complete!' : '🎉 Level mastered!'}</strong> ${esc(pick(MASTERY))}</p>`
+        + (ms ? `<p class="cheer">${esc(ms)}</p>` : '')
+        + `<p class="cheer">${dn} of ${T} levels charted.${nx ? ` ${esc(nx.title)} is now open.` : ' The whole course is yours.'}</p>`
+        + `<div class="bactions">${nx ? `<button class="primary" id="gonext">Sail on to ${esc(nx.title)}</button>` : ''}<button class="secondary" id="tomap">See the map</button></div></div>`;
+    }
+    h += `<div class="qtext">${q.from ? `<p class="from">From: ${esc(q.from)}</p>` : ''}${R(q.q)}</div>`;
+    if (q.type === 'mc') {
+      h += `<div class="choices">${q.choices.map((c, k) => {
+        const cls = V.answered ? (k === q.ans ? 'right' : k === V.pick ? 'wrong' : '') : '';
+        return `<button class="choice ${cls}" data-k="${k}" ${V.answered ? 'disabled' : ''}><span class="ck" aria-hidden="true">${k + 1}</span>${K('\\displaystyle ' + c)}</button>`;
+      }).join('')}</div>`;
+    } else {
+      h += `<div class="numrow"><label for="ans">Your answer</label><div class="numbox"><input id="ans" autocomplete="off" spellcheck="false" ${V.answered ? 'disabled' : ''} value="${esc(V.typed)}"><button class="primary" id="check" ${V.answered ? 'disabled' : ''}>Check answer</button></div>
+        <p class="fmt">${q.pi ? 'Enter the multiple of π: for 3π/2, type 3/2.' : 'Whole numbers, decimals, or fractions such as -3/4.'}</p><p class="err" id="err" aria-live="polite"></p></div>`;
+    }
+    if (!V.answered) {
+      h += `<div class="tools">${V.hint ? `<div class="hint"><strong>Hint.</strong> ${R(q.hint)}</div>` : `<button class="secondary" id="hintbtn">Show a hint</button><span class="hintnote">Using a hint makes this question worth half.</span>`}</div>`;
+    } else {
+      const ansShow = q.pi ? K(q.ansTex) : K(q.ansTex);
+      const verdict = V.correct
+        ? (V.hint ? 'Correct, with a hint: half credit — still a step forward.' : esc(pick(PRAISE)))
+        : `Not quite. The answer is ${ansShow}. Study the worked solution — every miss is a sounding that shows you the reef.`;
+      h += `<div class="fb ${V.correct ? 'ok' : 'no'}" id="fb" tabindex="-1" aria-live="polite"><p class="verdict">${verdict}</p><div class="sol"><h3>Worked solution</h3>${R(q.sol)}</div></div>
+        <div class="after"><button class="secondary" id="aifb">Ask the AI tutor</button><button class="primary" id="next">Next question</button></div><div class="aibox" id="aibox"></div>`;
+    }
+    return h;
+  }
+
+
+  async function aiFeedback(){
+    const btn=document.getElementById('aifb'), box=document.getElementById('aibox');
+    if(!btn||!box||!V.q) return;
+    const chosen = V.q.type==='mc' ? (V.q.choices[V.pick]||'') : (V.typed||'');
+    btn.disabled=true; const old=btn.textContent; btn.textContent='Asking…';
+    try{
+      const res=await fetch('https://de-marker.pages.dev/check',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({text:'My answer: '+(chosen||'(no answer)'),question:V.q.q,expected:V.q.ansTex+' . '+V.q.sol,mode:'tutor'})});
+      const d=await res.json();
+      if(!d.ok){ box.innerHTML='<div class="ai bad">'+esc(d.error||'The tutor could not answer.')+'</div>'; }
+      else { box.innerHTML='<div class="ai"><strong>AI tutor:</strong> '+esc(d.feedback||'')+'</div>'; typeset(); }
+    }catch(e){ box.innerHTML='<div class="ai bad">The AI tutor is unavailable right now. Check your connection.</div>'; }
+    btn.disabled=false; btn.textContent=old;
+  }
+  function drawLevel() {
+    const L = V.level, ls = levelsOf(L.world), i = ls.indexOf(L), st = lvs(L.id), Wd = WORLDS.find(w => w.id === L.world);
+    const hist = st.h.slice(-win(L));
+    const pips = Array.from({ length: win(L) }, (_, k) => { const v = hist[k]; return `<span class="pip ${v === undefined ? '' : v === 1 ? 'hit' : v === 0.5 ? 'half' : 'miss'}"></span>`; }).join('');
+    let streak = 0; for (let k = st.h.length - 1; k >= 0 && st.h[k] === 1; k--) streak++;
+    const note = st.m ? 'Mastered. Practise any time to stay sharp.' : `Score ${th(L)} of your last ${win(L)} to master this level.`;
+    const body = V.tab === 'learn' ? `<div class="learn">${R(L.learn)}</div>${videoHTML(L)}<button class="primary" id="startp">Start practising</button>` : practiceHTML(L);
+    app.innerHTML = `
+      <div class="lvbar"><button class="back quiet" id="back">Back to the map</button><button id="mute" class="quiet">${muteLabel()}</button></div>
+      <header class="lvhead"><p class="crumb">${Wd.title}, ${L.boss ? 'review' : `level ${i + 1} of ${ls.length - 1}`}</p><h2 id="lvtitle" tabindex="-1">${esc(L.title)}</h2></header>
+      <div class="meter"><div class="pips" role="img" aria-label="Score ${fmt(score(L))} out of the last ${Math.min(st.h.length, win(L))} answers">${pips}</div><p class="mnote">${note}${streak >= 3 ? ` <span class="streak">${streak} in a row.</span>` : ''}</p></div>
+      <div class="tabs" role="tablist"><button role="tab" data-tab="learn" aria-selected="${V.tab === 'learn'}">Learn</button><button role="tab" data-tab="practice" aria-selected="${V.tab === 'practice'}">Practice</button></div>
+      <section class="panel">${body}</section>`;
+    document.getElementById('back').onclick = () => { V.screen = 'map'; draw(); window.scrollTo(0, 0); };
+    const mb=document.getElementById('mute'); if(mb) mb.onclick=toggleMute;
+    app.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { if (V.q && V.q.type === 'num' && !V.answered) { const inp = document.getElementById('ans'); if (inp) V.typed = inp.value; } V.tab = b.dataset.tab; draw(); });
+    const sp = document.getElementById('startp'); if (sp) sp.onclick = () => { V.tab = 'practice'; draw(); focusAnswer(); };
+    app.querySelectorAll('.choice').forEach(b => b.onclick = () => answerMC(+b.dataset.k));
+    const ck = document.getElementById('check'); if (ck) ck.onclick = answerNum;
+    const inp = document.getElementById('ans'); if (inp && !V.answered) inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); answerNum(); } };
+    const hb = document.getElementById('hintbtn'); if (hb) hb.onclick = () => { const a = document.getElementById('ans'); if (a) V.typed = a.value; V.hint = true; draw(); focusAnswer(); };
+    const nb = document.getElementById('next'); if (nb) nb.onclick = () => { newQ(); draw(); focusAnswer(); };
+    const ab = document.getElementById('aifb'); if (ab) ab.onclick = aiFeedback;
+    const gn = document.getElementById('gonext'); if (gn) gn.onclick = () => openLevel(nextLevel(L).id);
+    const tm = document.getElementById('tomap'); if (tm) tm.onclick = () => { V.screen = 'map'; draw(); window.scrollTo(0, 0); };
+  }
+  function focusAnswer() { const a = document.getElementById('ans') || document.querySelector('.choice'); if (a) a.focus({ preventScroll: true }); }
+
+  document.addEventListener('keydown', e => {
+    if (V.screen !== 'level' || V.tab !== 'practice' || V.answered || !V.q || V.q.type !== 'mc') return;
+    if (e.target.tagName === 'INPUT' || e.metaKey || e.ctrlKey || e.altKey) return;
+    const k = parseInt(e.key, 10); if (k >= 1 && k <= V.q.choices.length) answerMC(k - 1);
+  });
+
+  function draw() { if (V.screen === 'map') drawMap(); else drawLevel(); typeset(); }
+  draw();
+  Store.get().then(saved => { if (saved && saved.lv) { S = Object.assign({ lv: {}, teacher: false }, saved); draw(); } });
+})();
+</script></body></html>
