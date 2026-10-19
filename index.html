@@ -1266,6 +1266,23 @@ gen: bossGen('p') });
 
 
 /* ===== World 0: Function families for Grade 12 ===== */
+
+LEVELS.push({ world: 'f', id: 'f0', title: 'Why derivatives and integrals are inverses', short: 'Slope, area, and the Fundamental Theorem.',
+learn: T`<p>Watch the video first. A derivative gives the <b>slope</b> of a curve at a point. An integral gives the <b>area</b> under a curve. The Fundamental Theorem connects them: if \(F(x)=\int_a^x f(t)\,dt\), then \(F'(x)=f(x)\).</p><p>Differentiation and integration are reverse operations: differentiate \(x^2\) to get \(2x\), then integrate \(2x\) to return to \(x^2+C\). The constant is the one thing differentiation forgets. This is why fluent differentiation is the key to integration: every integral asks "what function has this derivative?"</p>`,
+gen(d){
+  const bank=[
+   {q:T`What does $f^{\prime}(a)$ represent?`,c:T`\text{the slope of the tangent at }x=a`,w:[T`\text{the area under }f\text{ from }0\text{ to }a`,T`\text{the value }f(a)`,T`\text{the average value of }f`],h:'Think about the tangent line.',s:'The derivative at a point is the slope of the tangent there.'},
+   {q:T`What does $\int_a^b f(x)\,dx$ represent?`,c:T`\text{the signed area under }f\text{ from }a\text{ to }b`,w:[T`\text{the slope at }x=a`,T`\text{the value }f(b)-f(a)`,T`\text{the average slope}`],h:'Think about slices of area.',s:'A definite integral is the signed area under the curve between the limits.'},
+   {q:T`If $F(x)=\int_a^x f(t)\,dt$, what is $F^{\prime}(x)$?`,c:T`f(x)`,w:[T`F(x)`,T`f^{\prime}(x)`,T`0`],h:'This is the Fundamental Theorem.',s:'The rate at which the area grows is the height of the curve.'},
+   {q:T`Differentiate $x^3$, then integrate the result. What do you get?`,c:T`x^3+C`,w:[T`3x^2+C`,T`x^4+C`,T`x^3`],h:'Reverse the operations.',s:'Integrating the derivative returns the original function, plus a constant.'},
+   {q:T`Integrate $2x$, then differentiate the result. What do you get?`,c:T`2x`,w:[T`x^2+C`,T`2`,T`2x+C`],h:'Reverse the operations.',s:'Differentiating an antiderivative returns the original integrand.'},
+   {q:T`To integrate a function, what do you need to find?`,c:T`\text{a function whose derivative is the integrand}`,w:[T`\text{a function whose integral is the integrand}`,T`\text{the slope at one point}`,T`\text{the area at one point}`],h:'Integration is differentiation backwards.',s:'An antiderivative is a function whose derivative is the given integrand.'},
+   {q:T`Which pair shows inverse operations?`,c:T`x^2\ \leftrightarrow\ 2x`,w:[T`x^2\ \leftrightarrow\ x^3`,T`\sin x\ \leftrightarrow\ -\sin x`,T`e^x\ \leftrightarrow\ x e^{x-1}`],h:'Differentiate one way, integrate the other.',s:'Differentiating x squared gives 2x; integrating 2x returns x squared plus C.'}
+  ];
+  const v=pick(bank);
+  return MC(v.q,v.c,v.w,v.h,v.s);
+}});
+
 LEVELS.push({ world: 'f', id: 'f1', title: 'Power functions', short: 'Differentiate and integrate powers, including negative powers.',
 learn: T`<p>Power rule: \(\frac{d}{dx}x^n=nx^{n-1}\) and \(\int x^n\,dx=\frac{x^{n+1}}{n+1}+C\) for \(n\ne-1\). The same rule works for negative powers.</p>`,
 gen(d){
@@ -1443,6 +1460,7 @@ const VIDEOS = {
 };
 LEVELS.forEach(L => { if (VIDEOS[L.id]) L.videos = VIDEOS[L.id]; });
 const LOCAL_VIDEOS = {
+  f0: 'calc/calc-0-inverse.mp4',
   f1: 'calc/calc-power.mp4',
   f2: 'calc/calc-exp.mp4',
   f3: 'calc/calc-ln.mp4',
