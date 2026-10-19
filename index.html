@@ -194,6 +194,9 @@ button:disabled{cursor:default}
 .aibox{margin-top:12px}
 .ai{background:var(--good-t);border:1px solid var(--good);border-radius:10px;padding:12px 14px;font-size:14px;line-height:1.55;color:var(--ink)}
 .ai.bad{background:var(--flare-t);border-color:var(--flare)}
+
+.localvid{margin:14px 0}
+.localvid video{width:100%;display:block;border-radius:10px;background:#000;margin-top:8px}
 </style></head><body><main id="app"></main><script>
 /* ===== Limits to Infinity: shared helpers ===== */
 const T = String.raw;
@@ -1439,6 +1442,16 @@ const VIDEOS = {
         { id: 'JAf_aSIJryg', title: 'Partial Derivatives - Multivariable Calculus', by: 'The Organic Chemistry Tutor' }],
 };
 LEVELS.forEach(L => { if (VIDEOS[L.id]) L.videos = VIDEOS[L.id]; });
+const LOCAL_VIDEOS = {
+  f1: 'calc/calc-power.mp4',
+  f2: 'calc/calc-exp.mp4',
+  f3: 'calc/calc-ln.mp4',
+  f4: 'calc/calc-trig.mp4',
+  f5: 'calc/calc-hyperbolic.mp4',
+  p1: 'calc/calc-partial.mp4',
+  p8: 'calc/calc-partial.mp4'
+};
+LEVELS.forEach(L => { if (LOCAL_VIDEOS[L.id]) L.localVideo = LOCAL_VIDEOS[L.id]; });
 
 if (typeof module !== 'undefined') module.exports = { LEVELS, WORLDS, WIN, THRESH, VIDEOS };
 
@@ -1700,9 +1713,12 @@ if (typeof module !== 'undefined') module.exports = { LEVELS, WORLDS, WIN, THRES
   }
 
   function videoHTML(L) {
-    if (!L.videos || !L.videos.length) return '';
+    let h = '';
+    if (L.localVideo) h += `<div class="localvid"><h3 class="vhead">Watch the lesson</h3><video controls preload="metadata" playsinline><source src="${L.localVideo}" type="video/mp4"></video></div>`;
+    if (!L.videos || !L.videos.length) return h;
     const cards = L.videos.map(v => `<figure class="vid"><div class="frame"><iframe src="https://www.youtube-nocookie.com/embed/${v.id}" title="${esc(v.title)}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div><figcaption class="vcap"><b>${esc(v.title)}</b> — ${esc(v.by)}. <a href="https://www.youtube.com/watch?v=${v.id}" target="_blank" rel="noopener">Watch on YouTube</a></figcaption></figure>`).join('');
-    return `<div class="vids"><h3 class="vhead">Watch a lesson</h3><div class="vidgrid">${cards}</div></div>`;
+    h += `<div class="vids"><h3 class="vhead">Deeper dives</h3><div class="vidgrid">${cards}</div></div>`;
+    return h;
   }
 
   function practiceHTML(L) {
